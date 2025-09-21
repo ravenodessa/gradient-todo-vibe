@@ -1,162 +1,226 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Plus, CheckCircle2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Trash2, Plus, Check } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 interface Todo {
   id: string;
-  text: string;
+  title: string;
   completed: boolean;
-  createdAt: Date;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export default function TodoApp() {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [inputValue, setInputValue] = useState("");
+  const [newTodo, setNewTodo] = useState('');
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const addTodo = () => {
-    if (inputValue.trim()) {
-      const newTodo: Todo = {
-        id: crypto.randomUUID(),
-        text: inputValue.trim(),
-        completed: false,
-        createdAt: new Date(),
-      };
-      setTodos([newTodo, ...todos]);
-      setInputValue("");
+  useEffect(() => {
+    if (user) {
+      fetchTodos();
+    }
+  }, [user]);
+
+  const fetchTodos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('todos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTodos(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить задачи",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const toggleTodo = (id: string) => {
-    setTodos(todos.map(todo => 
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    ));
+  const addTodo = async () => {
+    if (!newTodo.trim() || !user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('todos')
+        .insert([
+          {
+            title: newTodo.trim(),
+            user_id: user.id,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setTodos([data, ...todos]);
+      setNewTodo('');
+      toast({
+        title: "Успешно!",
+        description: "Задача добавлена",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось добавить задачу",
+        variant: "destructive",
+      });
+    }
   };
 
-  const deleteTodo = (id: string) => {
-    setTodos(todos.filter(todo => todo.id !== id));
+  const toggleTodo = async (id: string) => {
+    const todo = todos.find(t => t.id === id);
+    if (!todo) return;
+
+    try {
+      const { error } = await supabase
+        .from('todos')
+        .update({ completed: !todo.completed })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setTodos(todos.map(t =>
+        t.id === id ? { ...t, completed: !t.completed } : t
+      ));
+    } catch (error: any) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить задачу",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteTodo = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('todos')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setTodos(todos.filter(todo => todo.id !== id));
+      toast({
+        title: "Успешно!",
+        description: "Задача удалена",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить задачу",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       addTodo();
     }
   };
 
-  const completedCount = todos.filter(todo => todo.completed).length;
-  const totalCount = todos.length;
+  if (loading) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="glass-effect rounded-2xl p-8 shadow-2xl border border-white/20 text-center">
+          <div>Загрузка задач...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-primary p-4 flex items-center justify-center">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
-            ✨ Todo List
-          </h1>
-          <p className="text-white/80">
-            Управляйте своими задачами красиво
-          </p>
+    <div className="max-w-2xl mx-auto">
+      <div className="glass-effect rounded-2xl p-8 shadow-2xl border border-white/20">
+        
+        {/* Add Todo Form */}
+        <div className="flex gap-3 mb-8">
+          <Input
+            value={newTodo}
+            onChange={(e) => setNewTodo(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Добавить новую задачу..."
+            className="flex-1 bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary"
+          />
+          <Button
+            onClick={addTodo}
+            className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shrink-0"
+            size="icon"
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
         </div>
-
-        {/* Stats */}
-        {totalCount > 0 && (
-          <Card className="mb-6 bg-gradient-glass backdrop-blur-md border-white/20 shadow-glass">
-            <div className="p-4 text-center">
-              <div className="flex items-center justify-center gap-2 text-white">
-                <CheckCircle2 className="w-5 h-5" />
-                <span className="font-medium">
-                  {completedCount} из {totalCount} выполнено
-                </span>
-              </div>
-              {completedCount === totalCount && totalCount > 0 && (
-                <div className="mt-2 text-sm text-green-300 animate-pulse">
-                  🎉 Все задачи выполнены!
-                </div>
-              )}
-            </div>
-          </Card>
-        )}
-
-        {/* Add Todo */}
-        <Card className="mb-6 bg-gradient-glass backdrop-blur-md border-white/20 shadow-glass">
-          <div className="p-6">
-            <div className="flex gap-3">
-              <Input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Добавить новую задачу..."
-                className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-white/40 focus:ring-white/20"
-              />
-              <Button
-                onClick={addTodo}
-                className="bg-gradient-secondary hover:shadow-glow transition-all duration-300 hover:scale-105"
-                size="icon"
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </Card>
 
         {/* Todo List */}
         <div className="space-y-3">
           {todos.length === 0 ? (
-            <Card className="bg-gradient-glass backdrop-blur-md border-white/20 shadow-glass">
-              <div className="p-8 text-center text-white/60">
-                <div className="text-4xl mb-4">📝</div>
-                <p>Пока нет задач</p>
-                <p className="text-sm mt-1">Добавьте первую задачу выше</p>
-              </div>
-            </Card>
+            <div className="text-center py-12 text-muted-foreground">
+              <div className="text-4xl mb-4">📝</div>
+              <p>Пока нет задач</p>
+              <p className="text-sm mt-1">Добавьте первую задачу выше</p>
+            </div>
           ) : (
-            todos.map((todo, index) => (
-              <Card
+            todos.map((todo) => (
+              <div
                 key={todo.id}
-                className={cn(
-                  "bg-gradient-glass backdrop-blur-md border-white/20 shadow-glass transition-all duration-300 hover:shadow-glow hover:scale-[1.02]",
-                  todo.completed && "opacity-75"
-                )}
-                style={{
-                  animationDelay: `${index * 100}ms`,
-                }}
+                className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200"
               >
-                <div className="p-4 flex items-center gap-3">
-                  <Checkbox
-                    checked={todo.completed}
-                    onCheckedChange={() => toggleTodo(todo.id)}
-                    className="data-[state=checked]:bg-gradient-secondary data-[state=checked]:border-transparent"
-                  />
-                  <span
-                    className={cn(
-                      "flex-1 text-white transition-all duration-300",
-                      todo.completed && "line-through text-white/60"
-                    )}
-                  >
-                    {todo.text}
-                  </span>
-                  <Button
-                    onClick={() => deleteTodo(todo.id)}
-                    variant="ghost"
-                    size="icon"
-                    className="text-white/60 hover:text-red-400 hover:bg-red-500/20 transition-all duration-300"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </Card>
+                <Button
+                  onClick={() => toggleTodo(todo.id)}
+                  variant="ghost"
+                  size="icon"
+                  className={`w-6 h-6 rounded-full border-2 transition-all duration-200 ${
+                    todo.completed
+                      ? 'bg-gradient-to-r from-primary to-secondary border-transparent text-white'
+                      : 'border-muted-foreground/30 hover:border-primary'
+                  }`}
+                >
+                  {todo.completed && <Check className="w-3 h-3" />}
+                </Button>
+                
+                <span
+                  className={`flex-1 transition-all duration-200 ${
+                    todo.completed
+                      ? 'line-through text-muted-foreground'
+                      : 'text-foreground'
+                  }`}
+                >
+                  {todo.title}
+                </span>
+                
+                <Button
+                  onClick={() => deleteTodo(todo.id)}
+                  variant="ghost"
+                  size="icon"
+                  className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
             ))
           )}
         </div>
 
-        {/* Footer */}
-        <div className="mt-8 text-center text-white/40 text-sm">
-          Сделано с ❤️ на Lovable
-        </div>
+        {/* Stats */}
+        {todos.length > 0 && (
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            Всего задач: {todos.length} | Выполнено: {todos.filter(t => t.completed).length}
+          </div>
+        )}
       </div>
     </div>
   );

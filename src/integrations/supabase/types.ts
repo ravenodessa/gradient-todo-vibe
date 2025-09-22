@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       todos: {
         Row: {
+          archived: boolean
           completed: boolean
           created_at: string
           id: string
@@ -24,6 +25,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived?: boolean
           completed?: boolean
           created_at?: string
           id?: string
@@ -32,6 +34,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived?: boolean
           completed?: boolean
           created_at?: string
           id?: string

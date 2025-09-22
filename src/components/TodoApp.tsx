@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, Plus, Check } from 'lucide-react';
+import { Trash2, Plus, Check, Archive } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +10,7 @@ interface Todo {
   id: string;
   title: string;
   completed: boolean;
+  archived: boolean;
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -33,6 +34,7 @@ export default function TodoApp() {
       const { data, error } = await supabase
         .from('todos')
         .select('*')
+        .eq('archived', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -127,6 +129,39 @@ export default function TodoApp() {
     }
   };
 
+  const archiveCompletedTodos = async () => {
+    const completedTodos = todos.filter(todo => todo.completed);
+    
+    if (completedTodos.length === 0) {
+      toast({
+        title: "Информация",
+        description: "Нет выполненных задач для архивирования",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('todos')
+        .update({ archived: true })
+        .in('id', completedTodos.map(todo => todo.id));
+
+      if (error) throw error;
+
+      setTodos(todos.filter(todo => !todo.completed));
+      toast({
+        title: "Успешно!",
+        description: `Архивировано ${completedTodos.length} выполненных задач`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось архивировать задачи",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       addTodo();
@@ -164,6 +199,20 @@ export default function TodoApp() {
             <Plus className="w-4 h-4" />
           </Button>
         </div>
+
+        {/* Archive Completed Button */}
+        {todos.some(todo => todo.completed) && (
+          <div className="mb-6">
+            <Button
+              onClick={archiveCompletedTodos}
+              variant="outline"
+              className="w-full bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground"
+            >
+              <Archive className="w-4 h-4 mr-2" />
+              Архивировать выполненные задачи ({todos.filter(t => t.completed).length})
+            </Button>
+          </div>
+        )}
 
         {/* Todo List */}
         <div className="space-y-3">

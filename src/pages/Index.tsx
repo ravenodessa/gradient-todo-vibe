@@ -48,6 +48,11 @@ export default function Index() {
             Ваши задачи
           </h1>
           <div className="flex items-center gap-4">
+            <Link to="/archive">
+              <Button variant="outline" className="bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground">
+                📁 Архив
+              </Button>
+            </Link>
             <span className="text-sm text-muted-foreground">
               {user.email}
             </span>

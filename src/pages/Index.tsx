@@ -2,10 +2,14 @@ import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import { UserAvatar } from '@/components/UserAvatar';
 import TodoApp from "@/components/TodoApp";
+import { Settings } from 'lucide-react';
 
 export default function Index() {
   const { user, loading, signOut } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,9 +57,27 @@ export default function Index() {
                 📁 Архив
               </Button>
             </Link>
-            <span className="text-sm text-muted-foreground">
-              {user.email}
-            </span>
+            <div className="flex items-center gap-3">
+              <UserAvatar
+                avatarUrl={profile?.avatar_url}
+                displayName={profile?.display_name}
+                email={user.email}
+                size="sm"
+              />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">
+                  {profile?.display_name || 'Пользователь'}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {user.email}
+                </span>
+              </div>
+            </div>
+            <Link to="/profile">
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </Link>
             <Button variant="outline" onClick={signOut}>
               Выйти
             </Button>

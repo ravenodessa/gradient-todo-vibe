@@ -2,6 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, RotateCcw, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -98,6 +109,29 @@ export default function Archive() {
     }
   };
 
+  const deleteAllArchivedTodos = async () => {
+    try {
+      const { error } = await supabase
+        .from('todos')
+        .delete()
+        .eq('archived', true);
+
+      if (error) throw error;
+
+      setArchivedTodos([]);
+      toast({
+        title: "Успешно!",
+        description: "Все архивные задачи удалены",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить все архивные задачи",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 flex items-center justify-center p-4">
@@ -136,8 +170,42 @@ export default function Archive() {
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="text-sm text-muted-foreground mb-4">
-                  Всего в архиве: {archivedTodos.length} {archivedTodos.length === 1 ? 'задача' : 'задач'}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-sm text-muted-foreground">
+                    Всего в архиве: {archivedTodos.length} {archivedTodos.length === 1 ? 'задача' : 'задач'}
+                  </div>
+                  
+                  {archivedTodos.length > 0 && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="h-8 px-3 text-xs"
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Удалить все
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Удалить все архивные задачи?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Это действие нельзя отменить. Все архивные задачи будут удалены навсегда.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Отмена</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={deleteAllArchivedTodos}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Удалить все
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
                 
                 {archivedTodos.map((todo) => (

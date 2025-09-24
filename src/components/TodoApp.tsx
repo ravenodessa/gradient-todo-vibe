@@ -223,7 +223,16 @@ export default function TodoApp() {
               <p className="text-sm mt-1">Добавьте первую задачу выше</p>
             </div>
           ) : (
-            todos.map((todo) => (
+            todos
+              .sort((a, b) => {
+                // Невыполненные задачи сверху (completed: false), выполненные снизу (completed: true)
+                if (a.completed === b.completed) {
+                  // Если статус одинаковый, сортируем по дате создания (новые сверху)
+                  return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                }
+                return a.completed ? 1 : -1;
+              })
+              .map((todo) => (
               <div
                 key={todo.id}
                 className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200"

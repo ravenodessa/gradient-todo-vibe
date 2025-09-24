@@ -46,6 +46,7 @@ export type Database = {
           archived: boolean
           completed: boolean
           created_at: string
+          due_date: string | null
           id: string
           title: string
           updated_at: string
@@ -55,6 +56,7 @@ export type Database = {
           archived?: boolean
           completed?: boolean
           created_at?: string
+          due_date?: string | null
           id?: string
           title: string
           updated_at?: string
@@ -64,6 +66,7 @@ export type Database = {
           archived?: boolean
           completed?: boolean
           created_at?: string
+          due_date?: string | null
           id?: string
           title?: string
           updated_at?: string

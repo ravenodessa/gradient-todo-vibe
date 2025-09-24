@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, Plus, Check, Archive, Edit2, X } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Trash2, Plus, Check, Archive, Edit2, X, CalendarIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 interface Todo {
   id: string;
@@ -14,6 +19,7 @@ interface Todo {
   user_id: string;
   created_at: string;
   updated_at: string;
+  due_date: string | null;
 }
 
 export default function TodoApp() {
@@ -22,6 +28,7 @@ export default function TodoApp() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [editingDate, setEditingDate] = useState<Date | undefined>();
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -135,11 +142,13 @@ export default function TodoApp() {
     if (todo.completed) return; // Нельзя редактировать выполненные задачи
     setEditingId(todo.id);
     setEditingText(todo.title);
+    setEditingDate(todo.due_date ? new Date(todo.due_date) : undefined);
   };
 
   const cancelEditing = () => {
     setEditingId(null);
     setEditingText('');
+    setEditingDate(undefined);
   };
 
   const saveEditing = async () => {
@@ -148,17 +157,25 @@ export default function TodoApp() {
     try {
       const { error } = await supabase
         .from('todos')
-        .update({ title: editingText.trim() })
+        .update({ 
+          title: editingText.trim(),
+          due_date: editingDate ? editingDate.toISOString().split('T')[0] : null
+        })
         .eq('id', editingId);
 
       if (error) throw error;
 
       setTodos(todos.map(t =>
-        t.id === editingId ? { ...t, title: editingText.trim() } : t
+        t.id === editingId ? { 
+          ...t, 
+          title: editingText.trim(),
+          due_date: editingDate ? editingDate.toISOString().split('T')[0] : null
+        } : t
       ));
       
       setEditingId(null);
       setEditingText('');
+      setEditingDate(undefined);
       
       toast({
         title: "Успешно!",
@@ -303,44 +320,93 @@ export default function TodoApp() {
                 </Button>
                 
                 {editingId === todo.id ? (
-                  <div className="flex-1 flex gap-2">
+                  <div className="flex-1 flex flex-col gap-2">
                     <Input
                       value={editingText}
                       onChange={(e) => setEditingText(e.target.value)}
                       onKeyDown={handleEditKeyPress}
-                      className="flex-1 h-8 bg-white/10 border-white/20 text-foreground"
+                      className="h-8 bg-white/10 border-white/20 text-foreground"
                       autoFocus
                     />
-                    <Button
-                      onClick={saveEditing}
-                      variant="ghost"
-                      size="icon"
-                      className="w-8 h-8 text-green-400 hover:text-green-300 hover:bg-green-400/10"
-                    >
-                      <Check className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      onClick={cancelEditing}
-                      variant="ghost"
-                      size="icon"
-                      className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-2 items-center">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "justify-start text-left font-normal bg-white/10 border-white/20 h-8 text-xs",
+                              !editingDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="w-3 h-3 mr-1" />
+                            {editingDate ? format(editingDate, "dd MMM", { locale: ru }) : "Дата"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={editingDate}
+                            onSelect={setEditingDate}
+                            className="pointer-events-auto"
+                            initialFocus
+                          />
+                          <div className="p-2 border-t">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setEditingDate(undefined)}
+                              className="w-full h-7 text-xs"
+                            >
+                              Убрать дату
+                            </Button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                      <Button
+                        onClick={saveEditing}
+                        variant="ghost"
+                        size="icon"
+                        className="w-8 h-8 text-green-400 hover:text-green-300 hover:bg-green-400/10"
+                      >
+                        <Check className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={cancelEditing}
+                        variant="ghost"
+                        size="icon"
+                        className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <>
-                    <span
-                      className={`flex-1 transition-all duration-200 ${
-                        todo.completed
-                          ? 'line-through text-muted-foreground'
-                          : 'text-foreground'
-                      }`}
-                      onClick={() => !todo.completed && startEditing(todo)}
-                      style={{ cursor: !todo.completed ? 'pointer' : 'default' }}
-                    >
-                      {todo.title}
-                    </span>
+                    <div className="flex-1">
+                      <span
+                        className={`block transition-all duration-200 ${
+                          todo.completed
+                            ? 'line-through text-muted-foreground'
+                            : 'text-foreground'
+                        }`}
+                        onClick={() => !todo.completed && startEditing(todo)}
+                        style={{ cursor: !todo.completed ? 'pointer' : 'default' }}
+                      >
+                        {todo.title}
+                      </span>
+                      {todo.due_date && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <CalendarIcon className="w-3 h-3 text-muted-foreground" />
+                          <span className={`text-xs ${
+                            new Date(todo.due_date) < new Date() && !todo.completed
+                              ? 'text-red-400'
+                              : 'text-muted-foreground'
+                          }`}>
+                            {format(new Date(todo.due_date), "dd MMM yyyy", { locale: ru })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                     
                     {!todo.completed && (
                       <Button

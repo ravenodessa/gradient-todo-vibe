@@ -70,7 +70,7 @@ export default function TodoApp() {
           {
             title: newTodo.trim(),
             user_id: user.id,
-            due_date: newTodoDate ? newTodoDate.toISOString().split('T')[0] : null,
+            due_date: newTodoDate ? format(newTodoDate, 'yyyy-MM-dd') : null,
           },
         ])
         .select()
@@ -162,7 +162,7 @@ export default function TodoApp() {
         .from('todos')
         .update({ 
           title: editingText.trim(),
-          due_date: editingDate ? editingDate.toISOString().split('T')[0] : null
+          due_date: editingDate ? format(editingDate, 'yyyy-MM-dd') : null
         })
         .eq('id', editingId);
 
@@ -172,7 +172,7 @@ export default function TodoApp() {
         t.id === editingId ? { 
           ...t, 
           title: editingText.trim(),
-          due_date: editingDate ? editingDate.toISOString().split('T')[0] : null
+          due_date: editingDate ? format(editingDate, 'yyyy-MM-dd') : null
         } : t
       ));
       

@@ -250,6 +250,179 @@ export default function TodoApp() {
     );
   }
 
+  // Группировка задач по датам
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const todayStr = format(today, 'yyyy-MM-dd');
+  const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
+
+  const groupedTodos = {
+    today: todos.filter(todo => todo.due_date === todayStr),
+    tomorrow: todos.filter(todo => todo.due_date === tomorrowStr),
+    later: todos.filter(todo => {
+      if (!todo.due_date) return true;
+      return todo.due_date > tomorrowStr;
+    })
+  };
+
+  const renderTodoItem = (todo: Todo) => (
+    <div
+      key={todo.id}
+      className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200"
+    >
+      <Button
+        onClick={() => toggleTodo(todo.id)}
+        variant="ghost"
+        size="icon"
+        className={`w-6 h-6 rounded-full border-2 transition-all duration-200 ${
+          todo.completed
+            ? 'bg-gradient-to-r from-primary to-secondary border-transparent text-white'
+            : 'border-muted-foreground/30 hover:border-primary'
+        }`}
+      >
+        {todo.completed && <Check className="w-3 h-3" />}
+      </Button>
+      
+      {editingId === todo.id ? (
+        <div className="flex-1 flex flex-col gap-2">
+          <Input
+            value={editingText}
+            onChange={(e) => setEditingText(e.target.value)}
+            onKeyDown={handleEditKeyPress}
+            className="h-8 bg-white/10 border-white/20 text-foreground"
+            autoFocus
+          />
+          <div className="flex gap-2 items-center">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal bg-white/10 border-white/20 h-8 text-xs",
+                    !editingDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="w-3 h-3 mr-1" />
+                  {editingDate ? format(editingDate, "dd MMM", { locale: ru }) : "Дата"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={editingDate}
+                  onSelect={setEditingDate}
+                  className="pointer-events-auto"
+                  initialFocus
+                />
+                <div className="p-2 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditingDate(undefined)}
+                    className="w-full h-7 text-xs"
+                  >
+                    Убрать дату
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+            <Button
+              onClick={saveEditing}
+              variant="ghost"
+              size="icon"
+              className="w-8 h-8 text-green-400 hover:text-green-300 hover:bg-green-400/10"
+            >
+              <Check className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={cancelEditing}
+              variant="ghost"
+              size="icon"
+              className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex-1">
+            <span
+              className={`block transition-all duration-200 ${
+                todo.completed
+                  ? 'line-through text-muted-foreground'
+                  : 'text-foreground'
+              }`}
+              onClick={() => !todo.completed && startEditing(todo)}
+              style={{ cursor: !todo.completed ? 'pointer' : 'default' }}
+            >
+              {todo.title}
+            </span>
+            {todo.due_date && (
+              <div className="flex items-center gap-1 mt-1">
+                <CalendarIcon className="w-3 h-3 text-muted-foreground" />
+                <span className={`text-xs ${
+                  new Date(todo.due_date) < new Date() && !todo.completed
+                    ? 'text-red-400'
+                    : 'text-muted-foreground'
+                }`}>
+                  {format(new Date(todo.due_date), "dd MMM yyyy", { locale: ru })}
+                </span>
+              </div>
+            )}
+          </div>
+          
+          {!todo.completed && (
+            <Button
+              onClick={() => startEditing(todo)}
+              variant="ghost"
+              size="icon"
+              className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+            >
+              <Edit2 className="w-4 h-4" />
+            </Button>
+          )}
+        </>
+      )}
+      
+      <Button
+        onClick={() => deleteTodo(todo.id)}
+        variant="ghost"
+        size="icon"
+        className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+      >
+        <Trash2 className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+
+  const renderTodoSection = (title: string, todos: Todo[], emoji: string) => {
+    if (todos.length === 0) return null;
+
+    const sortedTodos = todos.sort((a, b) => {
+      // Невыполненные задачи сверху
+      if (a.completed === b.completed) {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      return a.completed ? 1 : -1;
+    });
+
+    return (
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">{emoji}</span>
+          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+          <span className="text-sm text-muted-foreground">({todos.length})</span>
+        </div>
+        <div className="space-y-3">
+          {sortedTodos.map(renderTodoItem)}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <div className="glass-effect rounded-2xl p-8 shadow-2xl border border-white/20">
@@ -323,156 +496,20 @@ export default function TodoApp() {
           </div>
         )}
 
-        {/* Todo List */}
-        <div className="space-y-3">
-          {todos.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <div className="text-4xl mb-4">📝</div>
-              <p>Пока нет задач</p>
-              <p className="text-sm mt-1">Добавьте первую задачу выше</p>
-            </div>
-          ) : (
-            todos
-              .sort((a, b) => {
-                // Невыполненные задачи сверху (completed: false), выполненные снизу (completed: true)
-                if (a.completed === b.completed) {
-                  // Если статус одинаковый, сортируем по дате создания (новые сверху)
-                  return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-                }
-                return a.completed ? 1 : -1;
-              })
-              .map((todo) => (
-              <div
-                key={todo.id}
-                className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200"
-              >
-                <Button
-                  onClick={() => toggleTodo(todo.id)}
-                  variant="ghost"
-                  size="icon"
-                  className={`w-6 h-6 rounded-full border-2 transition-all duration-200 ${
-                    todo.completed
-                      ? 'bg-gradient-to-r from-primary to-secondary border-transparent text-white'
-                      : 'border-muted-foreground/30 hover:border-primary'
-                  }`}
-                >
-                  {todo.completed && <Check className="w-3 h-3" />}
-                </Button>
-                
-                {editingId === todo.id ? (
-                  <div className="flex-1 flex flex-col gap-2">
-                    <Input
-                      value={editingText}
-                      onChange={(e) => setEditingText(e.target.value)}
-                      onKeyDown={handleEditKeyPress}
-                      className="h-8 bg-white/10 border-white/20 text-foreground"
-                      autoFocus
-                    />
-                    <div className="flex gap-2 items-center">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "justify-start text-left font-normal bg-white/10 border-white/20 h-8 text-xs",
-                              !editingDate && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="w-3 h-3 mr-1" />
-                            {editingDate ? format(editingDate, "dd MMM", { locale: ru }) : "Дата"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={editingDate}
-                            onSelect={setEditingDate}
-                            className="pointer-events-auto"
-                            initialFocus
-                          />
-                          <div className="p-2 border-t">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingDate(undefined)}
-                              className="w-full h-7 text-xs"
-                            >
-                              Убрать дату
-                            </Button>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                      <Button
-                        onClick={saveEditing}
-                        variant="ghost"
-                        size="icon"
-                        className="w-8 h-8 text-green-400 hover:text-green-300 hover:bg-green-400/10"
-                      >
-                        <Check className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        onClick={cancelEditing}
-                        variant="ghost"
-                        size="icon"
-                        className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex-1">
-                      <span
-                        className={`block transition-all duration-200 ${
-                          todo.completed
-                            ? 'line-through text-muted-foreground'
-                            : 'text-foreground'
-                        }`}
-                        onClick={() => !todo.completed && startEditing(todo)}
-                        style={{ cursor: !todo.completed ? 'pointer' : 'default' }}
-                      >
-                        {todo.title}
-                      </span>
-                      {todo.due_date && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <CalendarIcon className="w-3 h-3 text-muted-foreground" />
-                          <span className={`text-xs ${
-                            new Date(todo.due_date) < new Date() && !todo.completed
-                              ? 'text-red-400'
-                              : 'text-muted-foreground'
-                          }`}>
-                            {format(new Date(todo.due_date), "dd MMM yyyy", { locale: ru })}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {!todo.completed && (
-                      <Button
-                        onClick={() => startEditing(todo)}
-                        variant="ghost"
-                        size="icon"
-                        className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </>
-                )}
-                
-                <Button
-                  onClick={() => deleteTodo(todo.id)}
-                  variant="ghost"
-                  size="icon"
-                  className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            ))
-          )}
-        </div>
+        {/* Todo Sections */}
+        {todos.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <div className="text-4xl mb-4">📝</div>
+            <p>Пока нет задач</p>
+            <p className="text-sm mt-1">Добавьте первую задачу выше</p>
+          </div>
+        ) : (
+          <>
+            {renderTodoSection("Сегодня", groupedTodos.today, "📅")}
+            {renderTodoSection("Завтра", groupedTodos.tomorrow, "⏰")}
+            {renderTodoSection("Позже", groupedTodos.later, "📆")}
+          </>
+        )}
 
         {/* Stats */}
         {todos.length > 0 && (

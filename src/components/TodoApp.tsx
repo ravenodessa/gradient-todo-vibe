@@ -25,6 +25,7 @@ interface Todo {
 export default function TodoApp() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState('');
+  const [newTodoDate, setNewTodoDate] = useState<Date | undefined>();
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
@@ -69,6 +70,7 @@ export default function TodoApp() {
           {
             title: newTodo.trim(),
             user_id: user.id,
+            due_date: newTodoDate ? newTodoDate.toISOString().split('T')[0] : null,
           },
         ])
         .select()
@@ -78,6 +80,7 @@ export default function TodoApp() {
       
       setTodos([data, ...todos]);
       setNewTodo('');
+      setNewTodoDate(undefined);
       toast({
         title: "Успешно!",
         description: "Задача добавлена",
@@ -252,21 +255,58 @@ export default function TodoApp() {
       <div className="glass-effect rounded-2xl p-8 shadow-2xl border border-white/20">
         
         {/* Add Todo Form */}
-        <div className="flex gap-3 mb-8">
-          <Input
-            value={newTodo}
-            onChange={(e) => setNewTodo(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Добавить новую задачу..."
-            className="flex-1 bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary"
-          />
-          <Button
-            onClick={addTodo}
-            className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shrink-0"
-            size="icon"
-          >
-            <Plus className="w-4 h-4" />
-          </Button>
+        <div className="space-y-3 mb-8">
+          <div className="flex gap-3">
+            <Input
+              value={newTodo}
+              onChange={(e) => setNewTodo(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Добавить новую задачу..."
+              className="flex-1 bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary"
+            />
+            <Button
+              onClick={addTodo}
+              className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shrink-0"
+              size="icon"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="flex justify-start">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal bg-white/10 border-white/20 text-xs",
+                    !newTodoDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="w-3 h-3 mr-2" />
+                  {newTodoDate ? format(newTodoDate, "dd MMM yyyy", { locale: ru }) : "Выбрать дату выполнения"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={newTodoDate}
+                  onSelect={setNewTodoDate}
+                  className="pointer-events-auto"
+                  initialFocus
+                />
+                <div className="p-2 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setNewTodoDate(undefined)}
+                    className="w-full h-7 text-xs"
+                  >
+                    Убрать дату
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
 
         {/* Archive Completed Button */}

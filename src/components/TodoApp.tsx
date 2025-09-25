@@ -25,7 +25,7 @@ interface Todo {
 export default function TodoApp() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState('');
-  const [newTodoDate, setNewTodoDate] = useState<Date | undefined>();
+  const [newTodoDate, setNewTodoDate] = useState<Date | undefined>(new Date());
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');

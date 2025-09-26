@@ -48,7 +48,7 @@ export default function Index() {
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center gap-3 mb-4 sm:pr-8">
-          <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent sm:pl-16">
+          <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent sm:pl-16 sm:ml-[30px]">
             Ваши задачи
           </h1>
           <div className="flex items-center gap-2">

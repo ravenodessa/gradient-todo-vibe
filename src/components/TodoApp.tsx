@@ -305,7 +305,7 @@ export default function TodoApp() {
                   )}
                 >
                   <CalendarIcon className="w-3 h-3 mr-1" />
-                  {editingDate ? format(editingDate, "dd MMM", { locale: ru }) : "Дата"}
+                  {editingDate ? format(editingDate, "EEE dd MMM", { locale: ru }) : "Дата"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -368,7 +368,7 @@ export default function TodoApp() {
                     ? 'text-red-400'
                     : 'text-muted-foreground'
                 }`}>
-                  {format(new Date(todo.due_date), "dd MMM yyyy", { locale: ru })}
+                  {format(new Date(todo.due_date), "EEE dd MMM yyyy", { locale: ru })}
                 </span>
               </div>
             )}
@@ -456,7 +456,7 @@ export default function TodoApp() {
                   )}
                 >
                   <CalendarIcon className="w-3 h-3 mr-2" />
-                  {newTodoDate ? format(newTodoDate, "dd MMM yyyy", { locale: ru }) : "Выбрать дату выполнения"}
+                  {newTodoDate ? format(newTodoDate, "EEE dd MMM yyyy", { locale: ru }) : "Выбрать дату выполнения"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">

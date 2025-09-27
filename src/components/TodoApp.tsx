@@ -445,7 +445,7 @@ export default function TodoApp() {
               <Plus className="w-4 h-4" />
             </Button>
           </div>
-          <div className="flex justify-start">
+          <div className="flex gap-2 justify-start">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -479,6 +479,17 @@ export default function TodoApp() {
                 </div>
               </PopoverContent>
             </Popover>
+            <Button
+              onClick={() => {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                setNewTodoDate(tomorrow);
+              }}
+              variant="outline"
+              className="bg-white/10 border-white/20 text-xs hover:bg-white/20"
+            >
+              Завтра
+            </Button>
           </div>
         </div>
 

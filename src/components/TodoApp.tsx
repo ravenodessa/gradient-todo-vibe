@@ -294,7 +294,7 @@ export default function TodoApp() {
             className="h-8 bg-white/10 border-white/20 text-foreground"
             autoFocus
           />
-          <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -328,6 +328,17 @@ export default function TodoApp() {
                 </div>
               </PopoverContent>
             </Popover>
+            <Button
+              onClick={() => {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                setEditingDate(tomorrow);
+              }}
+              variant="outline"
+              className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8"
+            >
+              Завтра
+            </Button>
             <Button
               onClick={saveEditing}
               variant="ghost"

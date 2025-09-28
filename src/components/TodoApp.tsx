@@ -70,7 +70,7 @@ export default function TodoApp() {
           {
             title: newTodo.trim(),
             user_id: user.id,
-            due_date: newTodoDate ? format(newTodoDate, 'yyyy-MM-dd') : null,
+            due_date: format(newTodoDate || new Date(), 'yyyy-MM-dd'),
           },
         ])
         .select()

@@ -536,7 +536,7 @@ export default function TodoApp() {
         {/* Stats */}
         {todos.length > 0 && (
           <div className="mt-6 text-center text-sm text-muted-foreground">
-            Всего задач: {todos.length} | Выполнено: {todos.filter(t => t.completed).length}
+            Активных задач: {todos.filter(t => !t.completed).length} | Выполнено: {todos.filter(t => t.completed).length}
           </div>
         )}
       </div>

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,6 +15,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const { signUp, signIn, user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,8 +28,8 @@ export default function Auth() {
     e.preventDefault();
     if (!email || !password) {
       toast({
-        title: "Ошибка",
-        description: "Пожалуйста, заполните все поля",
+        title: t('error'),
+        description: t('fill_all_fields'),
         variant: "destructive",
       });
       return;
@@ -42,27 +44,27 @@ export default function Auth() {
 
       if (error) {
         toast({
-          title: "Ошибка",
+          title: t('error'),
           description: error.message,
           variant: "destructive",
         });
       } else {
         if (!isLogin) {
           toast({
-            title: "Успешно!",
-            description: "Проверьте электронную почту для подтверждения аккаунта",
+            title: t('success'),
+            description: t('register_success'),
           });
         } else {
           toast({
-            title: "Добро пожаловать!",
-            description: "Вы успешно вошли в систему",
+            title: t('welcome_message'),
+            description: t('login_success'),
           });
         }
       }
     } catch (error: any) {
       toast({
-        title: "Ошибка",
-        description: "Произошла неожиданная ошибка",
+        title: t('error'),
+        description: t('unexpected_error'),
         variant: "destructive",
       });
     }
@@ -75,36 +77,36 @@ export default function Auth() {
       <Card className="w-full max-w-md glass-effect border-white/20">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            {isLogin ? 'Вход' : 'Регистрация'}
+            {isLogin ? t('login') : t('register')}
           </CardTitle>
           <CardDescription>
             {isLogin 
-              ? 'Войдите в свой аккаунт для доступа к задачам'
-              : 'Создайте аккаунт для сохранения задач'
+              ? t('login_description')
+              : t('register_description')
             }
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="ваш@email.com"
+                placeholder={t('email_placeholder')}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Пароль</Label>
+              <Label htmlFor="password">{t('password')}</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder={t('password_placeholder')}
                 required
               />
             </div>
@@ -114,8 +116,8 @@ export default function Auth() {
               disabled={loading}
             >
               {loading 
-                ? (isLogin ? 'Вхожу...' : 'Регистрирую...') 
-                : (isLogin ? 'Войти' : 'Зарегистрироваться')
+                ? (isLogin ? t('logging_in') : t('registering')) 
+                : (isLogin ? t('sign_in') : t('sign_up'))
               }
             </Button>
           </form>
@@ -125,8 +127,8 @@ export default function Auth() {
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               {isLogin 
-                ? 'Нет аккаунта? Зарегистрируйтесь'
-                : 'Уже есть аккаунт? Войдите'
+                ? t('no_account')
+                : t('have_account')
               }
             </button>
           </div>

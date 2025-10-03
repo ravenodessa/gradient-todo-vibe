@@ -6,11 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserAvatar } from './UserAvatar';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { Camera, Save } from 'lucide-react';
 
 export const ProfileSettings = () => {
   const { user } = useAuth();
   const { profile, loading, updateProfile, uploadAvatar } = useProfile();
+  const { t } = useLanguage();
   const [displayName, setDisplayName] = useState(profile?.display_name || '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -35,7 +37,7 @@ export const ProfileSettings = () => {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center">Загрузка...</div>
+          <div className="text-center">{t('loading')}</div>
         </CardContent>
       </Card>
     );
@@ -44,7 +46,7 @@ export const ProfileSettings = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Настройки профиля</CardTitle>
+        <CardTitle>{t('profile_settings')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-col items-center space-y-4">
@@ -73,12 +75,12 @@ export const ProfileSettings = () => {
             className="hidden"
           />
           {uploading && (
-            <p className="text-sm text-muted-foreground">Загрузка...</p>
+            <p className="text-sm text-muted-foreground">{t('loading')}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t('email')}</Label>
           <Input
             id="email"
             value={user?.email || ''}
@@ -88,12 +90,12 @@ export const ProfileSettings = () => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="displayName">Отображаемое имя</Label>
+          <Label htmlFor="displayName">{t('display_name')}</Label>
           <Input
             id="displayName"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="Введите ваше имя"
+            placeholder={t('display_name_placeholder')}
           />
         </div>
 
@@ -103,7 +105,7 @@ export const ProfileSettings = () => {
           className="w-full"
         >
           <Save className="h-4 w-4 mr-2" />
-          {saving ? 'Сохранение...' : 'Сохранить'}
+          {saving ? t('saving') : t('save')}
         </Button>
       </CardContent>
     </Card>

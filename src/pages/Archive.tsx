@@ -16,6 +16,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface ArchivedTodo {
   id: string;
@@ -32,6 +33,7 @@ export default function Archive() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,8 +56,8 @@ export default function Archive() {
       setArchivedTodos(data || []);
     } catch (error: any) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось загрузить архивированные задачи",
+        title: t('error'),
+        description: t('failed_load_archived'),
         variant: "destructive",
       });
     } finally {
@@ -74,13 +76,13 @@ export default function Archive() {
 
       setArchivedTodos(archivedTodos.filter(todo => todo.id !== id));
       toast({
-        title: "Успешно!",
-        description: "Задача восстановлена",
+        title: t('success'),
+        description: t('task_restored'),
       });
     } catch (error: any) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось восстановить задачу",
+        title: t('error'),
+        description: t('failed_restore_task'),
         variant: "destructive",
       });
     }
@@ -97,13 +99,13 @@ export default function Archive() {
 
       setArchivedTodos(archivedTodos.filter(todo => todo.id !== id));
       toast({
-        title: "Успешно!",
-        description: "Задача удалена навсегда",
+        title: t('success'),
+        description: t('task_deleted'),
       });
     } catch (error: any) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось удалить задачу",
+        title: t('error'),
+        description: t('failed_delete_task'),
         variant: "destructive",
       });
     }
@@ -120,13 +122,13 @@ export default function Archive() {
 
       setArchivedTodos([]);
       toast({
-        title: "Успешно!",
-        description: "Все архивные задачи удалены",
+        title: t('success'),
+        description: t('all_archived_deleted'),
       });
     } catch (error: any) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось удалить все архивные задачи",
+        title: t('error'),
+        description: t('failed_delete_all'),
         variant: "destructive",
       });
     }
@@ -136,7 +138,7 @@ export default function Archive() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 flex items-center justify-center p-4">
         <div className="glass-effect rounded-2xl p-8 shadow-2xl border border-white/20 text-center">
-          <div>Загрузка архива...</div>
+          <div>{t('loading')}</div>
         </div>
       </div>
     );
@@ -155,7 +157,7 @@ export default function Archive() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Архив задач
+            {t('task_archive')}
           </h1>
         </div>
 
@@ -165,14 +167,14 @@ export default function Archive() {
             {archivedTodos.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <div className="text-4xl mb-4">📁</div>
-                <p>Архив пуст</p>
-                <p className="text-sm mt-1">Архивированные задачи будут отображаться здесь</p>
+                <p>{t('archive_empty')}</p>
+                <p className="text-sm mt-1">{t('archive_description')}</p>
               </div>
             ) : (
               <div className="space-y-3">
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-sm text-muted-foreground">
-                    Всего в архиве: {archivedTodos.length} {archivedTodos.length === 1 ? 'задача' : 'задач'}
+                    {t('total_in_archive')}: {archivedTodos.length} {archivedTodos.length === 1 ? t('task') : t('tasks')}
                   </div>
                   
                   {archivedTodos.length > 0 && (
@@ -184,23 +186,23 @@ export default function Archive() {
                           className="h-8 px-3 text-xs"
                         >
                           <Trash2 className="w-3 h-3 mr-1" />
-                          Удалить все
+                          {t('delete_all')}
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Удалить все архивные задачи?</AlertDialogTitle>
+                          <AlertDialogTitle>{t('delete_all_archived')}</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Это действие нельзя отменить. Все архивные задачи будут удалены навсегда.
+                            {t('delete_all_warning')}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Отмена</AlertDialogCancel>
+                          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={deleteAllArchivedTodos}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           >
-                            Удалить все
+                            {t('delete_all')}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -222,7 +224,7 @@ export default function Archive() {
                         {todo.title}
                       </span>
                       <div className="text-xs text-muted-foreground mt-1">
-                        Архивировано: {new Date(todo.updated_at).toLocaleDateString('ru-RU')}
+                        {t('archived_on')}: {new Date(todo.updated_at).toLocaleDateString()}
                       </div>
                     </div>
                     
@@ -232,7 +234,7 @@ export default function Archive() {
                         variant="ghost"
                         size="icon"
                         className="w-8 h-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                        title="Восстановить задачу"
+                        title={t('restore')}
                       >
                         <RotateCcw className="w-4 h-4" />
                       </Button>
@@ -242,7 +244,7 @@ export default function Archive() {
                         variant="ghost"
                         size="icon"
                         className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                        title="Удалить навсегда"
+                        title={t('delete_forever')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

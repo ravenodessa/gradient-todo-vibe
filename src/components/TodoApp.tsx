@@ -7,8 +7,9 @@ import { Trash2, Plus, Check, Archive, Edit2, X, CalendarIcon } from 'lucide-rea
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
 import { format } from 'date-fns';
-import { ru } from 'date-fns/locale';
+import { ru, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 interface Todo {
@@ -32,6 +33,9 @@ export default function TodoApp() {
   const [editingDate, setEditingDate] = useState<Date | undefined>();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t, language } = useLanguage();
+
+  const dateLocale = language === 'ru' ? ru : enUS;
 
   useEffect(() => {
     if (user) {
@@ -51,8 +55,8 @@ export default function TodoApp() {
       setTodos(data || []);
     } catch (error: any) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось загрузить задачи",
+        title: t('error'),
+        description: t('failed_load_tasks'),
         variant: "destructive",
       });
     } finally {
@@ -82,13 +86,13 @@ export default function TodoApp() {
       setNewTodo('');
       setNewTodoDate(undefined);
       toast({
-        title: "Успешно!",
-        description: "Задача добавлена",
+        title: t('success'),
+        description: t('task_added'),
       });
     } catch (error: any) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось добавить задачу",
+        title: t('error'),
+        description: t('failed_add_task'),
         variant: "destructive",
       });
     }
@@ -111,8 +115,8 @@ export default function TodoApp() {
       ));
     } catch (error: any) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось обновить задачу",
+        title: t('error'),
+        description: t('failed_update_task'),
         variant: "destructive",
       });
     }
@@ -129,20 +133,20 @@ export default function TodoApp() {
 
       setTodos(todos.filter(todo => todo.id !== id));
       toast({
-        title: "Успешно!",
-        description: "Задача удалена",
+        title: t('success'),
+        description: t('task_deleted'),
       });
     } catch (error: any) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось удалить задачу",
+        title: t('error'),
+        description: t('failed_delete_task'),
         variant: "destructive",
       });
     }
   };
 
   const startEditing = (todo: Todo) => {
-    if (todo.completed) return; // Нельзя редактировать выполненные задачи
+    if (todo.completed) return;
     setEditingId(todo.id);
     setEditingText(todo.title);
     setEditingDate(todo.due_date ? new Date(todo.due_date) : undefined);
@@ -181,13 +185,13 @@ export default function TodoApp() {
       setEditingDate(undefined);
       
       toast({
-        title: "Успешно!",
-        description: "Задача обновлена",
+        title: t('success'),
+        description: t('task_updated'),
       });
     } catch (error: any) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось обновить задачу",
+        title: t('error'),
+        description: t('failed_update_task'),
         variant: "destructive",
       });
     }
@@ -198,8 +202,8 @@ export default function TodoApp() {
     
     if (completedTodos.length === 0) {
       toast({
-        title: "Информация",
-        description: "Нет выполненных задач для архивирования",
+        title: t('info'),
+        description: t('no_completed_tasks'),
       });
       return;
     }
@@ -214,13 +218,13 @@ export default function TodoApp() {
 
       setTodos(todos.filter(todo => !todo.completed));
       toast({
-        title: "Успешно!",
-        description: `Архивировано ${completedTodos.length} выполненных задач`,
+        title: t('success'),
+        description: t('tasks_archived').replace('{count}', completedTodos.length.toString()),
       });
     } catch (error: any) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось архивировать задачи",
+        title: t('error'),
+        description: t('failed_archive_tasks'),
         variant: "destructive",
       });
     }
@@ -244,13 +248,12 @@ export default function TodoApp() {
     return (
       <div className="max-w-2xl mx-auto">
         <div className="glass-effect rounded-2xl p-8 shadow-2xl border border-white/20 text-center">
-          <div>Загрузка задач...</div>
+          <div>{t('loading_tasks')}</div>
         </div>
       </div>
     );
   }
 
-  // Группировка задач по датам
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -305,7 +308,7 @@ export default function TodoApp() {
                   )}
                 >
                   <CalendarIcon className="w-3 h-3 mr-1" />
-                  {editingDate ? format(editingDate, "EEE dd MMM", { locale: ru }) : "Дата"}
+                  {editingDate ? format(editingDate, "EEE dd MMM", { locale: dateLocale }) : t('date')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -323,7 +326,7 @@ export default function TodoApp() {
                     onClick={() => setEditingDate(undefined)}
                     className="w-full h-7 text-xs"
                   >
-                    Убрать дату
+                    {t('remove_date')}
                   </Button>
                 </div>
               </PopoverContent>
@@ -337,7 +340,7 @@ export default function TodoApp() {
               variant="outline"
               className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8"
             >
-              Завтра
+              {t('tomorrow')}
             </Button>
             <Button
               onClick={saveEditing}
@@ -379,7 +382,7 @@ export default function TodoApp() {
                     ? 'text-red-400'
                     : 'text-muted-foreground'
                 }`}>
-                  {format(new Date(todo.due_date), "EEE dd MMM yyyy", { locale: ru })}
+                  {format(new Date(todo.due_date), "EEE dd MMM yyyy", { locale: dateLocale })}
                 </span>
               </div>
             )}
@@ -413,7 +416,6 @@ export default function TodoApp() {
     if (todos.length === 0) return null;
 
     const sortedTodos = todos.sort((a, b) => {
-      // Невыполненные задачи сверху
       if (a.completed === b.completed) {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
@@ -445,7 +447,7 @@ export default function TodoApp() {
               value={newTodo}
               onChange={(e) => setNewTodo(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Добавить новую задачу..."
+              placeholder={t('add_new_task')}
               className="flex-1 bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary"
             />
             <Button
@@ -467,7 +469,7 @@ export default function TodoApp() {
                   )}
                 >
                   <CalendarIcon className="w-3 h-3 mr-2" />
-                  {newTodoDate ? format(newTodoDate, "EEE dd MMM yyyy", { locale: ru }) : "Выбрать дату выполнения"}
+                  {newTodoDate ? format(newTodoDate, "EEE dd MMM yyyy", { locale: dateLocale }) : t('select_date')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -485,7 +487,7 @@ export default function TodoApp() {
                     onClick={() => setNewTodoDate(undefined)}
                     className="w-full h-7 text-xs"
                   >
-                    Убрать дату
+                    {t('remove_date')}
                   </Button>
                 </div>
               </PopoverContent>
@@ -499,7 +501,7 @@ export default function TodoApp() {
               variant="outline"
               className="bg-white/10 border-white/20 text-xs hover:bg-white/20"
             >
-              Завтра
+              {t('tomorrow')}
             </Button>
           </div>
         </div>
@@ -513,7 +515,7 @@ export default function TodoApp() {
               className="w-full bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground"
             >
               <Archive className="w-4 h-4 mr-2" />
-              Архивировать выполненные задачи ({todos.filter(t => t.completed).length})
+              {t('archive_completed')} ({todos.filter(t => t.completed).length})
             </Button>
           </div>
         )}
@@ -522,21 +524,21 @@ export default function TodoApp() {
         {todos.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <div className="text-4xl mb-4">📝</div>
-            <p>Пока нет задач</p>
-            <p className="text-sm mt-1">Добавьте первую задачу выше</p>
+            <p>{t('no_tasks')}</p>
+            <p className="text-sm mt-1">{t('no_tasks_description')}</p>
           </div>
         ) : (
           <>
-            {renderTodoSection("Сегодня", groupedTodos.today, "📅")}
-            {renderTodoSection("Завтра", groupedTodos.tomorrow, "⏰")}
-            {renderTodoSection("Позже", groupedTodos.later, "📆")}
+            {renderTodoSection(t('today'), groupedTodos.today, "📅")}
+            {renderTodoSection(t('tomorrow'), groupedTodos.tomorrow, "⏰")}
+            {renderTodoSection(t('later'), groupedTodos.later, "📆")}
           </>
         )}
 
         {/* Stats */}
         {todos.length > 0 && (
           <div className="mt-6 text-center text-sm text-muted-foreground">
-            Активных задач: {todos.filter(t => !t.completed).length} | Выполнено: {todos.filter(t => t.completed).length}
+            {t('active_tasks')}: {todos.filter(t => !t.completed).length} | {t('total_tasks')}: {todos.length}
           </div>
         )}
       </div>

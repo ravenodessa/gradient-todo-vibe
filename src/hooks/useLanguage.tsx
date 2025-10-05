@@ -204,7 +204,7 @@ const translations = {
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem('language');
-    return (saved === 'en' || saved === 'ru') ? saved : 'ru';
+    return (saved === 'en' || saved === 'ru') ? saved : 'en';
   });
 
   const handleSetLanguage = (lang: Language) => {

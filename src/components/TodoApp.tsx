@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
-import { format } from 'date-fns';
+import { format, addWeeks, startOfWeek } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
@@ -343,6 +343,16 @@ export default function TodoApp() {
               {t('tomorrow')}
             </Button>
             <Button
+              onClick={() => {
+                const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
+                setEditingDate(nextMonday);
+              }}
+              variant="outline"
+              className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8"
+            >
+              {t('next_week')}
+            </Button>
+            <Button
               onClick={saveEditing}
               variant="ghost"
               size="icon"
@@ -502,6 +512,16 @@ export default function TodoApp() {
               className="bg-white/10 border-white/20 text-xs hover:bg-white/20"
             >
               {t('tomorrow')}
+            </Button>
+            <Button
+              onClick={() => {
+                const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
+                setNewTodoDate(nextMonday);
+              }}
+              variant="outline"
+              className="bg-white/10 border-white/20 text-xs hover:bg-white/20"
+            >
+              {t('next_week')}
             </Button>
           </div>
         </div>

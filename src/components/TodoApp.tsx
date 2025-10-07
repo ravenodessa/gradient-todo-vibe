@@ -297,78 +297,82 @@ export default function TodoApp() {
             className="h-8 bg-white/10 border-white/20 text-foreground"
             autoFocus
           />
-            <div className="flex gap-2 items-center">
-            <Popover>
-              <PopoverTrigger asChild>
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2 items-center flex-wrap">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "justify-start text-left font-normal bg-white/10 border-white/20 h-8 text-xs",
+                        !editingDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="w-3 h-3 mr-1" />
+                      {editingDate ? format(editingDate, "EEE dd MMM", { locale: dateLocale }) : t('date')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={editingDate}
+                      onSelect={setEditingDate}
+                      className="pointer-events-auto"
+                      initialFocus
+                    />
+                    <div className="p-2 border-t">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingDate(undefined)}
+                        className="w-full h-7 text-xs"
+                      >
+                        {t('remove_date')}
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
                 <Button
+                  onClick={() => {
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    setEditingDate(tomorrow);
+                  }}
                   variant="outline"
-                  className={cn(
-                    "justify-start text-left font-normal bg-white/10 border-white/20 h-8 text-xs",
-                    !editingDate && "text-muted-foreground"
-                  )}
+                  className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8"
                 >
-                  <CalendarIcon className="w-3 h-3 mr-1" />
-                  {editingDate ? format(editingDate, "EEE dd MMM", { locale: dateLocale }) : t('date')}
+                  {t('tomorrow')}
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={editingDate}
-                  onSelect={setEditingDate}
-                  className="pointer-events-auto"
-                  initialFocus
-                />
-                <div className="p-2 border-t">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setEditingDate(undefined)}
-                    className="w-full h-7 text-xs"
-                  >
-                    {t('remove_date')}
-                  </Button>
-                </div>
-              </PopoverContent>
-            </Popover>
-            <Button
-              onClick={() => {
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                setEditingDate(tomorrow);
-              }}
-              variant="outline"
-              className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8"
-            >
-              {t('tomorrow')}
-            </Button>
-            <Button
-              onClick={() => {
-                const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
-                setEditingDate(nextMonday);
-              }}
-              variant="outline"
-              className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8"
-            >
-              {t('next_week')}
-            </Button>
-            <Button
-              onClick={saveEditing}
-              variant="ghost"
-              size="icon"
-              className="w-8 h-8 text-green-400 hover:text-green-300 hover:bg-green-400/10"
-            >
-              <Check className="w-4 h-4" />
-            </Button>
-            <Button
-              onClick={cancelEditing}
-              variant="ghost"
-              size="icon"
-              className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+              </div>
+              <div className="flex gap-2 items-center">
+                <Button
+                  onClick={() => {
+                    const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
+                    setEditingDate(nextMonday);
+                  }}
+                  variant="outline"
+                  className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8 flex-1 sm:flex-initial"
+                >
+                  {t('next_week')}
+                </Button>
+                <Button
+                  onClick={saveEditing}
+                  variant="ghost"
+                  size="icon"
+                  className="w-8 h-8 text-green-400 hover:text-green-300 hover:bg-green-400/10"
+                >
+                  <Check className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={cancelEditing}
+                  variant="ghost"
+                  size="icon"
+                  className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
         </div>
       ) : (
         <>
@@ -468,58 +472,60 @@ export default function TodoApp() {
               <Plus className="w-4 h-4" />
             </Button>
           </div>
-          <div className="flex gap-2 justify-start">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "justify-start text-left font-normal bg-white/10 border-white/20 text-xs",
-                    !newTodoDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="w-3 h-3 mr-2" />
-                  {newTodoDate ? format(newTodoDate, "EEE dd MMM yyyy", { locale: dateLocale }) : t('select_date')}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={newTodoDate}
-                  onSelect={setNewTodoDate}
-                  className="pointer-events-auto"
-                  initialFocus
-                />
-                <div className="p-2 border-t">
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2 justify-start flex-wrap">
+              <Popover>
+                <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    size="sm"
-                    onClick={() => setNewTodoDate(undefined)}
-                    className="w-full h-7 text-xs"
+                    className={cn(
+                      "justify-start text-left font-normal bg-white/10 border-white/20 text-xs",
+                      !newTodoDate && "text-muted-foreground"
+                    )}
                   >
-                    {t('remove_date')}
+                    <CalendarIcon className="w-3 h-3 mr-2" />
+                    {newTodoDate ? format(newTodoDate, "EEE dd MMM yyyy", { locale: dateLocale }) : t('select_date')}
                   </Button>
-                </div>
-              </PopoverContent>
-            </Popover>
-            <Button
-              onClick={() => {
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                setNewTodoDate(tomorrow);
-              }}
-              variant="outline"
-              className="bg-white/10 border-white/20 text-xs hover:bg-white/20"
-            >
-              {t('tomorrow')}
-            </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={newTodoDate}
+                    onSelect={setNewTodoDate}
+                    className="pointer-events-auto"
+                    initialFocus
+                  />
+                  <div className="p-2 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNewTodoDate(undefined)}
+                      className="w-full h-7 text-xs"
+                    >
+                      {t('remove_date')}
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Button
+                onClick={() => {
+                  const tomorrow = new Date();
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  setNewTodoDate(tomorrow);
+                }}
+                variant="outline"
+                className="bg-white/10 border-white/20 text-xs hover:bg-white/20"
+              >
+                {t('tomorrow')}
+              </Button>
+            </div>
             <Button
               onClick={() => {
                 const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
                 setNewTodoDate(nextMonday);
               }}
               variant="outline"
-              className="bg-white/10 border-white/20 text-xs hover:bg-white/20"
+              className="bg-white/10 border-white/20 text-xs hover:bg-white/20 w-full sm:w-auto"
             >
               {t('next_week')}
             </Button>

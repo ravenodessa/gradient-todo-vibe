@@ -343,18 +343,18 @@ export default function TodoApp() {
                 >
                   {t('tomorrow')}
                 </Button>
-              </div>
-              <div className="flex gap-2 items-center">
                 <Button
                   onClick={() => {
                     const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
                     setEditingDate(nextMonday);
                   }}
                   variant="outline"
-                  className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8 flex-1 sm:flex-initial"
+                  className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8 w-full sm:w-auto"
                 >
                   {t('next_week')}
                 </Button>
+              </div>
+              <div className="flex gap-2 items-center">
                 <Button
                   onClick={saveEditing}
                   variant="ghost"
@@ -472,53 +472,51 @@ export default function TodoApp() {
               <Plus className="w-4 h-4" />
             </Button>
           </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex gap-2 justify-start flex-wrap">
-              <Popover>
-                <PopoverTrigger asChild>
+          <div className="flex gap-2 justify-start flex-wrap">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal bg-white/10 border-white/20 text-xs",
+                    !newTodoDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="w-3 h-3 mr-2" />
+                  {newTodoDate ? format(newTodoDate, "EEE dd MMM yyyy", { locale: dateLocale }) : t('select_date')}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={newTodoDate}
+                  onSelect={setNewTodoDate}
+                  className="pointer-events-auto"
+                  initialFocus
+                />
+                <div className="p-2 border-t">
                   <Button
                     variant="outline"
-                    className={cn(
-                      "justify-start text-left font-normal bg-white/10 border-white/20 text-xs",
-                      !newTodoDate && "text-muted-foreground"
-                    )}
+                    size="sm"
+                    onClick={() => setNewTodoDate(undefined)}
+                    className="w-full h-7 text-xs"
                   >
-                    <CalendarIcon className="w-3 h-3 mr-2" />
-                    {newTodoDate ? format(newTodoDate, "EEE dd MMM yyyy", { locale: dateLocale }) : t('select_date')}
+                    {t('remove_date')}
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={newTodoDate}
-                    onSelect={setNewTodoDate}
-                    className="pointer-events-auto"
-                    initialFocus
-                  />
-                  <div className="p-2 border-t">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setNewTodoDate(undefined)}
-                      className="w-full h-7 text-xs"
-                    >
-                      {t('remove_date')}
-                    </Button>
-                  </div>
-                </PopoverContent>
-              </Popover>
-              <Button
-                onClick={() => {
-                  const tomorrow = new Date();
-                  tomorrow.setDate(tomorrow.getDate() + 1);
-                  setNewTodoDate(tomorrow);
-                }}
-                variant="outline"
-                className="bg-white/10 border-white/20 text-xs hover:bg-white/20"
-              >
-                {t('tomorrow')}
-              </Button>
-            </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+            <Button
+              onClick={() => {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                setNewTodoDate(tomorrow);
+              }}
+              variant="outline"
+              className="bg-white/10 border-white/20 text-xs hover:bg-white/20"
+            >
+              {t('tomorrow')}
+            </Button>
             <Button
               onClick={() => {
                 const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });

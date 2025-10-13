@@ -84,7 +84,7 @@ export default function TodoApp() {
       
       setTodos([data, ...todos]);
       setNewTodo('');
-      setNewTodoDate(undefined);
+      setNewTodoDate(new Date());
       toast({
         title: t('success'),
         description: t('task_added'),

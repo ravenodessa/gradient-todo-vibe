@@ -21,6 +21,7 @@ interface Todo {
   created_at: string;
   updated_at: string;
   due_date: string | null;
+  notes: string | null;
 }
 
 export default function TodoApp() {
@@ -31,6 +32,7 @@ export default function TodoApp() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
   const [editingDate, setEditingDate] = useState<Date | undefined>();
+  const [editingNotes, setEditingNotes] = useState('');
   const { user } = useAuth();
   const { toast } = useToast();
   const { t, language } = useLanguage();
@@ -150,23 +152,35 @@ export default function TodoApp() {
     setEditingId(todo.id);
     setEditingText(todo.title);
     setEditingDate(todo.due_date ? new Date(todo.due_date) : undefined);
+    setEditingNotes(todo.notes || '');
   };
 
   const cancelEditing = () => {
     setEditingId(null);
     setEditingText('');
     setEditingDate(undefined);
+    setEditingNotes('');
   };
 
   const saveEditing = async () => {
     if (!editingText.trim() || !editingId) return;
+
+    if (editingNotes.length > 200) {
+      toast({
+        title: t('error'),
+        description: 'Заметки не могут содержать более 200 символов',
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const { error } = await supabase
         .from('todos')
         .update({ 
           title: editingText.trim(),
-          due_date: editingDate ? format(editingDate, 'yyyy-MM-dd') : null
+          due_date: editingDate ? format(editingDate, 'yyyy-MM-dd') : null,
+          notes: editingNotes.trim() || null
         })
         .eq('id', editingId);
 
@@ -176,13 +190,15 @@ export default function TodoApp() {
         t.id === editingId ? { 
           ...t, 
           title: editingText.trim(),
-          due_date: editingDate ? format(editingDate, 'yyyy-MM-dd') : null
+          due_date: editingDate ? format(editingDate, 'yyyy-MM-dd') : null,
+          notes: editingNotes.trim() || null
         } : t
       ));
       
       setEditingId(null);
       setEditingText('');
       setEditingDate(undefined);
+      setEditingNotes('');
       
       toast({
         title: t('success'),
@@ -268,6 +284,29 @@ export default function TodoApp() {
       if (!todo.due_date) return true;
       return todo.due_date > tomorrowStr;
     })
+  };
+
+  const renderNotesWithLinks = (notes: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = notes.split(urlRegex);
+    
+    return parts.map((part, index) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part}
+          </a>
+        );
+      }
+      return <span key={index}>{part}</span>;
+    });
   };
 
   const renderTodoItem = (todo: Todo) => (
@@ -388,6 +427,11 @@ export default function TodoApp() {
             >
               {todo.title}
             </span>
+            {todo.notes && (
+              <div className="mt-1 text-xs text-muted-foreground break-words">
+                {renderNotesWithLinks(todo.notes)}
+              </div>
+            )}
             {todo.due_date && (
               <div className="flex items-center gap-1 mt-1">
                 <CalendarIcon className="w-3 h-3 text-muted-foreground" />

@@ -336,6 +336,19 @@ export default function TodoApp() {
             className="h-8 bg-white/10 border-white/20 text-foreground"
             autoFocus
           />
+          <div className="relative">
+            <Input
+              value={editingNotes}
+              onChange={(e) => setEditingNotes(e.target.value)}
+              placeholder="Заметки (макс. 200 символов)"
+              className="h-8 bg-white/10 border-white/20 text-foreground text-xs pr-12"
+            />
+            <span className={`absolute right-2 top-1/2 -translate-y-1/2 text-xs ${
+              editingNotes.length > 200 ? 'text-red-400' : 'text-muted-foreground'
+            }`}>
+              {editingNotes.length}/200
+            </span>
+          </div>
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 items-center flex-wrap">
                 <Popover>

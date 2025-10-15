@@ -441,7 +441,7 @@ export default function TodoApp() {
               {todo.title}
             </span>
             {todo.notes && (
-              <div className="mt-1 text-xs text-muted-foreground break-words">
+              <div className="mt-1 text-xs text-muted-foreground break-words break-all">
                 {renderNotesWithLinks(todo.notes)}
               </div>
             )}

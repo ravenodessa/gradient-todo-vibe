@@ -509,7 +509,7 @@ export default function TodoApp() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="glass-effect rounded-2xl p-8 shadow-2xl border border-white/20">
+      <div className="glass-effect rounded-b-2xl p-8 shadow-2xl border border-white/20 border-t-0">
         
         {/* Add Todo Form */}
         <div className="space-y-3 mb-8">

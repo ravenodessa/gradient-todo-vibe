@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Check, Archive, Edit2, X, CalendarIcon, Repeat } from 'lucide-react';
+import { Trash2, Plus, Check, Archive, Edit2, X, CalendarIcon, Repeat, GripVertical } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -12,6 +12,23 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { format, addWeeks, startOfWeek } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface Todo {
   id: string;
@@ -24,6 +41,7 @@ interface Todo {
   due_date: string | null;
   notes: string | null;
   recurrence_type: 'daily' | 'weekdays' | 'weekends' | null;
+  order_index: number;
 }
 
 export default function TodoApp() {
@@ -49,12 +67,20 @@ export default function TodoApp() {
     }
   }, [user]);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   const fetchTodos = async () => {
     try {
       const { data, error } = await supabase
         .from('todos')
         .select('*')
         .eq('archived', false)
+        .order('order_index', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -74,6 +100,10 @@ export default function TodoApp() {
     if (!newTodo.trim() || !user) return;
 
     try {
+      const maxOrderIndex = todos.length > 0 
+        ? Math.max(...todos.map(t => t.order_index || 0))
+        : 0;
+
       const { data, error } = await supabase
         .from('todos')
         .insert([
@@ -82,6 +112,7 @@ export default function TodoApp() {
             user_id: user.id,
             due_date: format(newTodoDate || new Date(), 'yyyy-MM-dd'),
             recurrence_type: newTodoRecurrence === 'none' ? null : newTodoRecurrence,
+            order_index: maxOrderIndex + 1,
           },
         ])
         .select()
@@ -89,7 +120,7 @@ export default function TodoApp() {
 
       if (error) throw error;
       
-      setTodos([data as Todo, ...todos]);
+      setTodos([...todos, data as Todo]);
       setNewTodo('');
       setNewTodoDate(new Date());
       setNewTodoRecurrence('none');
@@ -362,6 +393,49 @@ export default function TodoApp() {
     })
   };
 
+  const handleDragEnd = async (event: DragEndEvent, sectionTodos: Todo[]) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = sectionTodos.findIndex((todo) => todo.id === active.id);
+    const newIndex = sectionTodos.findIndex((todo) => todo.id === over.id);
+
+    const reorderedTodos = arrayMove(sectionTodos, oldIndex, newIndex);
+    
+    // Update order_index for all items in this section
+    const updatedTodos = reorderedTodos.map((todo, index) => ({
+      ...todo,
+      order_index: index,
+    }));
+
+    // Optimistically update UI
+    setTodos(prevTodos => {
+      const otherTodos = prevTodos.filter(t => !sectionTodos.find(st => st.id === t.id));
+      return [...otherTodos, ...updatedTodos];
+    });
+
+    // Save to database
+    try {
+      const updates = updatedTodos.map((todo) =>
+        supabase
+          .from('todos')
+          .update({ order_index: todo.order_index })
+          .eq('id', todo.id)
+      );
+
+      await Promise.all(updates);
+    } catch (error: any) {
+      toast({
+        title: t('error'),
+        description: 'Не удалось сохранить порядок задач',
+        variant: "destructive",
+      });
+      // Revert on error
+      fetchTodos();
+    }
+  };
+
   const renderNotesWithLinks = (notes: string) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const parts = notes.split(urlRegex);
@@ -385,11 +459,35 @@ export default function TodoApp() {
     });
   };
 
-  const renderTodoItem = (todo: Todo) => (
-    <div
-      key={todo.id}
-      className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200"
-    >
+  const SortableItem = ({ todo }: { todo: Todo }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: todo.id });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    };
+
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200"
+      >
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing touch-none"
+        >
+          <GripVertical className="w-4 h-4 text-muted-foreground" />
+        </div>
       <Button
         onClick={() => toggleTodo(todo.id)}
         variant="ghost"
@@ -572,23 +670,24 @@ export default function TodoApp() {
         </>
       )}
       
-      <Button
-        onClick={() => deleteTodo(todo.id)}
-        variant="ghost"
-        size="icon"
-        className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-      >
-        <Trash2 className="w-4 h-4" />
-      </Button>
-    </div>
-  );
+        <Button
+          onClick={() => deleteTodo(todo.id)}
+          variant="ghost"
+          size="icon"
+          className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
+    );
+  };
 
-  const renderTodoSection = (title: string, todos: Todo[], emoji: string) => {
-    if (todos.length === 0) return null;
+  const renderTodoSection = (title: string, sectionTodos: Todo[], emoji: string) => {
+    if (sectionTodos.length === 0) return null;
 
-    const sortedTodos = todos.sort((a, b) => {
+    const sortedTodos = sectionTodos.sort((a, b) => {
       if (a.completed === b.completed) {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return (a.order_index || 0) - (b.order_index || 0);
       }
       return a.completed ? 1 : -1;
     });
@@ -598,11 +697,24 @@ export default function TodoApp() {
         <div className="flex items-center gap-2 mb-3">
           <span className="text-lg">{emoji}</span>
           <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-          <span className="text-sm text-muted-foreground">({todos.length})</span>
+          <span className="text-sm text-muted-foreground">({sectionTodos.length})</span>
         </div>
-        <div className="space-y-3">
-          {sortedTodos.map(renderTodoItem)}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={(event) => handleDragEnd(event, sortedTodos)}
+        >
+          <SortableContext
+            items={sortedTodos.map(t => t.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-3">
+              {sortedTodos.map(todo => (
+                <SortableItem key={todo.id} todo={todo} />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       </div>
     );
   };

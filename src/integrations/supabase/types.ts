@@ -49,6 +49,7 @@ export type Database = {
           due_date: string | null
           id: string
           notes: string | null
+          recurrence_type: string | null
           title: string
           updated_at: string
           user_id: string
@@ -60,6 +61,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           notes?: string | null
+          recurrence_type?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -71,6 +73,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           notes?: string | null
+          recurrence_type?: string | null
           title?: string
           updated_at?: string
           user_id?: string

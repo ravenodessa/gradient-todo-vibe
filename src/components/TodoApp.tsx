@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Trash2, Plus, Check, Archive, Edit2, X, CalendarIcon } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Trash2, Plus, Check, Archive, Edit2, X, CalendarIcon, Repeat } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -22,17 +23,20 @@ interface Todo {
   updated_at: string;
   due_date: string | null;
   notes: string | null;
+  recurrence_type: 'daily' | 'weekdays' | 'weekends' | null;
 }
 
 export default function TodoApp() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState('');
   const [newTodoDate, setNewTodoDate] = useState<Date | undefined>(new Date());
+  const [newTodoRecurrence, setNewTodoRecurrence] = useState<string>('none');
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
   const [editingDate, setEditingDate] = useState<Date | undefined>();
   const [editingNotes, setEditingNotes] = useState('');
+  const [editingRecurrence, setEditingRecurrence] = useState<string>('none');
   const { user } = useAuth();
   const { toast } = useToast();
   const { t, language } = useLanguage();
@@ -54,7 +58,7 @@ export default function TodoApp() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTodos(data || []);
+      setTodos((data || []) as Todo[]);
     } catch (error: any) {
       toast({
         title: t('error'),
@@ -77,6 +81,7 @@ export default function TodoApp() {
             title: newTodo.trim(),
             user_id: user.id,
             due_date: format(newTodoDate || new Date(), 'yyyy-MM-dd'),
+            recurrence_type: newTodoRecurrence === 'none' ? null : newTodoRecurrence,
           },
         ])
         .select()
@@ -84,9 +89,10 @@ export default function TodoApp() {
 
       if (error) throw error;
       
-      setTodos([data, ...todos]);
+      setTodos([data as Todo, ...todos]);
       setNewTodo('');
       setNewTodoDate(new Date());
+      setNewTodoRecurrence('none');
       toast({
         title: t('success'),
         description: t('task_added'),
@@ -100,21 +106,86 @@ export default function TodoApp() {
     }
   };
 
+  const getNextRecurrenceDate = (currentDate: string, recurrenceType: string): string => {
+    const date = new Date(currentDate);
+    
+    if (recurrenceType === 'daily') {
+      date.setDate(date.getDate() + 1);
+      return format(date, 'yyyy-MM-dd');
+    }
+    
+    if (recurrenceType === 'weekdays') {
+      // Найти следующий рабочий день
+      do {
+        date.setDate(date.getDate() + 1);
+      } while (date.getDay() === 0 || date.getDay() === 6);
+      return format(date, 'yyyy-MM-dd');
+    }
+    
+    if (recurrenceType === 'weekends') {
+      // Найти следующий выходной день
+      do {
+        date.setDate(date.getDate() + 1);
+      } while (date.getDay() !== 0 && date.getDay() !== 6);
+      return format(date, 'yyyy-MM-dd');
+    }
+    
+    return currentDate;
+  };
+
   const toggleTodo = async (id: string) => {
     const todo = todos.find(t => t.id === id);
-    if (!todo) return;
+    if (!todo || !user) return;
 
     try {
-      const { error } = await supabase
-        .from('todos')
-        .update({ completed: !todo.completed })
-        .eq('id', id);
+      // Если задача повторяющаяся и её завершают
+      if (todo.recurrence_type && !todo.completed) {
+        // Создаем новую задачу с следующей датой
+        const nextDate = getNextRecurrenceDate(todo.due_date || format(new Date(), 'yyyy-MM-dd'), todo.recurrence_type);
+        
+        const { data: newTodo, error: createError } = await supabase
+          .from('todos')
+          .insert([{
+            title: todo.title,
+            user_id: user.id,
+            due_date: nextDate,
+            recurrence_type: todo.recurrence_type,
+            notes: todo.notes,
+          }])
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (createError) throw createError;
 
-      setTodos(todos.map(t =>
-        t.id === id ? { ...t, completed: !t.completed } : t
-      ));
+        // Помечаем текущую задачу как выполненную
+        const { error: updateError } = await supabase
+          .from('todos')
+          .update({ completed: true })
+          .eq('id', id);
+
+        if (updateError) throw updateError;
+
+        setTodos([newTodo as Todo, ...todos.map(t =>
+          t.id === id ? { ...t, completed: true } : t
+        )]);
+
+        toast({
+          title: t('success'),
+          description: 'Создана следующая повторяющаяся задача',
+        });
+      } else {
+        // Обычное переключение статуса
+        const { error } = await supabase
+          .from('todos')
+          .update({ completed: !todo.completed })
+          .eq('id', id);
+
+        if (error) throw error;
+
+        setTodos(todos.map(t =>
+          t.id === id ? { ...t, completed: !t.completed } : t
+        ));
+      }
     } catch (error: any) {
       toast({
         title: t('error'),
@@ -153,6 +224,7 @@ export default function TodoApp() {
     setEditingText(todo.title);
     setEditingDate(todo.due_date ? new Date(todo.due_date) : undefined);
     setEditingNotes(todo.notes || '');
+    setEditingRecurrence(todo.recurrence_type || 'none');
   };
 
   const cancelEditing = () => {
@@ -160,6 +232,7 @@ export default function TodoApp() {
     setEditingText('');
     setEditingDate(undefined);
     setEditingNotes('');
+    setEditingRecurrence('none');
   };
 
   const saveEditing = async () => {
@@ -180,7 +253,8 @@ export default function TodoApp() {
         .update({ 
           title: editingText.trim(),
           due_date: editingDate ? format(editingDate, 'yyyy-MM-dd') : null,
-          notes: editingNotes.trim() || null
+          notes: editingNotes.trim() || null,
+          recurrence_type: editingRecurrence === 'none' ? null : editingRecurrence
         })
         .eq('id', editingId);
 
@@ -191,7 +265,8 @@ export default function TodoApp() {
           ...t, 
           title: editingText.trim(),
           due_date: editingDate ? format(editingDate, 'yyyy-MM-dd') : null,
-          notes: editingNotes.trim() || null
+          notes: editingNotes.trim() || null,
+          recurrence_type: editingRecurrence === 'none' ? null : editingRecurrence as any
         } : t
       ));
       
@@ -199,6 +274,7 @@ export default function TodoApp() {
       setEditingText('');
       setEditingDate(undefined);
       setEditingNotes('');
+      setEditingRecurrence('none');
       
       toast({
         title: t('success'),
@@ -384,6 +460,18 @@ export default function TodoApp() {
                     </div>
                   </PopoverContent>
                 </Popover>
+                <Select value={editingRecurrence} onValueChange={setEditingRecurrence}>
+                  <SelectTrigger className="bg-white/10 border-white/20 h-8 text-xs w-auto">
+                    <Repeat className="w-3 h-3 mr-1" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Не повторять</SelectItem>
+                    <SelectItem value="daily">Каждый день</SelectItem>
+                    <SelectItem value="weekdays">Рабочие дни</SelectItem>
+                    <SelectItem value="weekends">Выходные</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button
                   onClick={() => {
                     const tomorrow = new Date();
@@ -445,18 +533,30 @@ export default function TodoApp() {
                 {renderNotesWithLinks(todo.notes)}
               </div>
             )}
-            {todo.due_date && (
-              <div className="flex items-center gap-1 mt-1">
-                <CalendarIcon className="w-3 h-3 text-muted-foreground" />
-                <span className={`text-xs ${
-                  new Date(todo.due_date) < new Date() && !todo.completed
-                    ? 'text-red-400'
-                    : 'text-muted-foreground'
-                }`}>
-                  {format(new Date(todo.due_date), "EEE dd MMM yyyy", { locale: dateLocale })}
-                </span>
-              </div>
-            )}
+            <div className="flex items-center gap-2 flex-wrap mt-1">
+              {todo.due_date && (
+                <div className="flex items-center gap-1">
+                  <CalendarIcon className="w-3 h-3 text-muted-foreground" />
+                  <span className={`text-xs ${
+                    new Date(todo.due_date) < new Date() && !todo.completed
+                      ? 'text-red-400'
+                      : 'text-muted-foreground'
+                  }`}>
+                    {format(new Date(todo.due_date), "EEE dd MMM yyyy", { locale: dateLocale })}
+                  </span>
+                </div>
+              )}
+              {todo.recurrence_type && (
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                  <Repeat className="w-3 h-3 text-primary" />
+                  <span className="text-xs text-primary">
+                    {todo.recurrence_type === 'daily' && 'Ежедневно'}
+                    {todo.recurrence_type === 'weekdays' && 'Рабочие дни'}
+                    {todo.recurrence_type === 'weekends' && 'Выходные'}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
           
           {!todo.completed && (
@@ -563,6 +663,18 @@ export default function TodoApp() {
                 </div>
               </PopoverContent>
             </Popover>
+            <Select value={newTodoRecurrence} onValueChange={setNewTodoRecurrence}>
+              <SelectTrigger className="bg-white/10 border-white/20 h-auto text-xs w-auto py-2">
+                <Repeat className="w-3 h-3 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Не повторять</SelectItem>
+                <SelectItem value="daily">Каждый день</SelectItem>
+                <SelectItem value="weekdays">Рабочие дни</SelectItem>
+                <SelectItem value="weekends">Выходные</SelectItem>
+              </SelectContent>
+            </Select>
             <Button
               onClick={() => {
                 const tomorrow = new Date();

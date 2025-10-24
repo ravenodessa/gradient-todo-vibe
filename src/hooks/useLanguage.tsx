@@ -80,6 +80,12 @@ const translations = {
     'active_tasks': 'активных задач',
     'total_tasks': 'всего задач',
     'date': 'Дата',
+    'recurrence': 'Повторение',
+    'recurrence_none': 'Без повторения',
+    'recurrence_daily': 'Ежедневно',
+    'recurrence_weekdays': 'По будням',
+    'recurrence_weekends': 'По выходным',
+    'repeats': 'Повторяется',
     
     // Toast messages
     'error': 'Ошибка',
@@ -175,6 +181,12 @@ const translations = {
     'active_tasks': 'active tasks',
     'total_tasks': 'total tasks',
     'date': 'Date',
+    'recurrence': 'Recurrence',
+    'recurrence_none': 'No recurrence',
+    'recurrence_daily': 'Daily',
+    'recurrence_weekdays': 'Weekdays',
+    'recurrence_weekends': 'Weekends',
+    'repeats': 'Repeats',
     
     // Toast messages
     'error': 'Error',

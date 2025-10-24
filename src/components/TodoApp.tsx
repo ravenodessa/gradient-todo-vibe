@@ -564,10 +564,10 @@ export default function TodoApp() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Не повторять</SelectItem>
-                    <SelectItem value="daily">Каждый день</SelectItem>
-                    <SelectItem value="weekdays">Рабочие дни</SelectItem>
-                    <SelectItem value="weekends">Выходные</SelectItem>
+                    <SelectItem value="none">{t('recurrence_none')}</SelectItem>
+                    <SelectItem value="daily">{t('recurrence_daily')}</SelectItem>
+                    <SelectItem value="weekdays">{t('recurrence_weekdays')}</SelectItem>
+                    <SelectItem value="weekends">{t('recurrence_weekends')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button
@@ -648,9 +648,9 @@ export default function TodoApp() {
                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
                   <Repeat className="w-3 h-3 text-primary" />
                   <span className="text-xs text-primary">
-                    {todo.recurrence_type === 'daily' && 'Ежедневно'}
-                    {todo.recurrence_type === 'weekdays' && 'Рабочие дни'}
-                    {todo.recurrence_type === 'weekends' && 'Выходные'}
+                    {todo.recurrence_type === 'daily' && t('recurrence_daily')}
+                    {todo.recurrence_type === 'weekdays' && t('recurrence_weekdays')}
+                    {todo.recurrence_type === 'weekends' && t('recurrence_weekends')}
                   </span>
                 </div>
               )}
@@ -781,10 +781,10 @@ export default function TodoApp() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Не повторять</SelectItem>
-                <SelectItem value="daily">Каждый день</SelectItem>
-                <SelectItem value="weekdays">Рабочие дни</SelectItem>
-                <SelectItem value="weekends">Выходные</SelectItem>
+                <SelectItem value="none">{t('recurrence_none')}</SelectItem>
+                <SelectItem value="daily">{t('recurrence_daily')}</SelectItem>
+                <SelectItem value="weekdays">{t('recurrence_weekdays')}</SelectItem>
+                <SelectItem value="weekends">{t('recurrence_weekends')}</SelectItem>
               </SelectContent>
             </Select>
             <Button

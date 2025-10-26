@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, RotateCcw, Trash2 } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Trash2, Check, CalendarIcon } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +17,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
+import { format } from 'date-fns';
+import { ru, enUS } from 'date-fns/locale';
 
 interface ArchivedTodo {
   id: string;
@@ -33,8 +35,10 @@ export default function Archive() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
+
+  const dateLocale = language === 'ru' ? ru : enUS;
 
   useEffect(() => {
     if (!user) {
@@ -215,16 +219,34 @@ export default function Archive() {
                     key={todo.id}
                     className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200"
                   >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled
+                      className={`w-6 h-6 rounded-full border-2 transition-all duration-200 ${
+                        todo.completed
+                          ? 'bg-gradient-to-r from-primary to-secondary border-transparent text-white'
+                          : 'border-muted-foreground/30'
+                      }`}
+                    >
+                      {todo.completed && <Check className="w-4 h-4" />}
+                    </Button>
+
                     <div className="flex-1">
-                      <span className={`transition-all duration-200 ${
+                      <span className={`block transition-all duration-200 ${
                         todo.completed
                           ? 'line-through text-muted-foreground'
                           : 'text-foreground'
                       }`}>
                         {todo.title}
                       </span>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {t('archived_on')}: {new Date(todo.updated_at).toLocaleDateString()}
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-1">
+                          <CalendarIcon className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            {t('archived_on')}: {format(new Date(todo.updated_at), "dd MMM yyyy", { locale: dateLocale })}
+                          </span>
+                        </div>
                       </div>
                     </div>
                     

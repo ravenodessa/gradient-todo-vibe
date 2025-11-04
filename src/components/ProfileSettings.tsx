@@ -8,11 +8,14 @@ import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Camera, Save } from 'lucide-react';
+import { profileSchema } from '@/lib/validation';
+import { useToast } from '@/hooks/use-toast';
 
 export const ProfileSettings = () => {
   const { user } = useAuth();
   const { profile, loading, updateProfile, uploadAvatar } = useProfile();
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [displayName, setDisplayName] = useState(profile?.display_name || '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -20,7 +23,24 @@ export const ProfileSettings = () => {
 
   const handleSave = async () => {
     setSaving(true);
-    await updateProfile({ display_name: displayName });
+    
+    // Validate input before updating
+    const validationResult = profileSchema.safeParse({
+      display_name: displayName.trim() || null,
+    });
+
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
+      toast({
+        title: t('error'),
+        description: firstError.message,
+        variant: 'destructive',
+      });
+      setSaving(false);
+      return;
+    }
+
+    await updateProfile({ display_name: validationResult.data.display_name });
     setSaving(false);
   };
 

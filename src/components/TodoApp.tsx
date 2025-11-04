@@ -12,6 +12,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { format, addWeeks, startOfWeek } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { todoSchema } from '@/lib/validation';
 import {
   DndContext,
   closestCenter,
@@ -100,6 +101,24 @@ export default function TodoApp() {
     if (!newTodo.trim() || !user) return;
 
     try {
+      // Validate input before sending to database
+      const validationResult = todoSchema.safeParse({
+        title: newTodo.trim(),
+        notes: null,
+        due_date: format(newTodoDate || new Date(), 'yyyy-MM-dd'),
+        recurrence_type: newTodoRecurrence === 'none' ? null : newTodoRecurrence,
+      });
+
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast({
+          title: t('error'),
+          description: firstError.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
       const maxOrderIndex = todos.length > 0 
         ? Math.max(...todos.map(t => t.order_index || 0))
         : 0;
@@ -108,10 +127,10 @@ export default function TodoApp() {
         .from('todos')
         .insert([
           {
-            title: newTodo.trim(),
+            title: validationResult.data.title,
             user_id: user.id,
-            due_date: format(newTodoDate || new Date(), 'yyyy-MM-dd'),
-            recurrence_type: newTodoRecurrence === 'none' ? null : newTodoRecurrence,
+            due_date: validationResult.data.due_date,
+            recurrence_type: validationResult.data.recurrence_type,
             order_index: maxOrderIndex + 1,
           },
         ])
@@ -269,23 +288,32 @@ export default function TodoApp() {
   const saveEditing = async () => {
     if (!editingText.trim() || !editingId) return;
 
-    if (editingNotes.length > 200) {
-      toast({
-        title: t('error'),
-        description: 'Заметки не могут содержать более 200 символов',
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
+      // Validate input before sending to database
+      const validationResult = todoSchema.safeParse({
+        title: editingText.trim(),
+        notes: editingNotes.trim() || null,
+        due_date: editingDate ? format(editingDate, 'yyyy-MM-dd') : null,
+        recurrence_type: editingRecurrence === 'none' ? null : editingRecurrence,
+      });
+
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast({
+          title: t('error'),
+          description: firstError.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('todos')
         .update({ 
-          title: editingText.trim(),
-          due_date: editingDate ? format(editingDate, 'yyyy-MM-dd') : null,
-          notes: editingNotes.trim() || null,
-          recurrence_type: editingRecurrence === 'none' ? null : editingRecurrence
+          title: validationResult.data.title,
+          due_date: validationResult.data.due_date,
+          notes: validationResult.data.notes,
+          recurrence_type: validationResult.data.recurrence_type
         })
         .eq('id', editingId);
 
@@ -294,10 +322,10 @@ export default function TodoApp() {
       setTodos(todos.map(t =>
         t.id === editingId ? { 
           ...t, 
-          title: editingText.trim(),
-          due_date: editingDate ? format(editingDate, 'yyyy-MM-dd') : null,
-          notes: editingNotes.trim() || null,
-          recurrence_type: editingRecurrence === 'none' ? null : editingRecurrence as any
+          title: validationResult.data.title,
+          due_date: validationResult.data.due_date,
+          notes: validationResult.data.notes,
+          recurrence_type: validationResult.data.recurrence_type as any
         } : t
       ));
       

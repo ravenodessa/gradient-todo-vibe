@@ -43,7 +43,7 @@ export default function Index() {
         </div>
       </div>;
   }
-  return <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-4">
+  return <main className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-4">
       <div className="max-w-2xl mx-auto">
         <div className="glass-effect rounded-t-2xl px-8 pt-6 pb-4 shadow-2xl border border-white/20 border-b-0">
           <div className="flex justify-between items-center gap-3">
@@ -83,5 +83,5 @@ export default function Index() {
         </div>
         <TodoApp />
       </div>
-    </div>;
+    </main>;
 }

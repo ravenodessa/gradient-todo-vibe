@@ -73,7 +73,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 flex items-center justify-center p-4">
+    <main className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 flex items-center justify-center p-4">
       <Card className="w-full max-w-md glass-effect border-white/20">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
@@ -134,6 +134,6 @@ export default function Auth() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }

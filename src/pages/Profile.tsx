@@ -8,7 +8,7 @@ export default function Profile() {
   const { t } = useLanguage();
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-4">
+    <main className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-4">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <Link to="/">
@@ -24,6 +24,6 @@ export default function Profile() {
         
         <ProfileSettings />
       </div>
-    </div>
+    </main>
   );
 }

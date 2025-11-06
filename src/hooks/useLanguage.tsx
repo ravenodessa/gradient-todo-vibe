@@ -111,6 +111,10 @@ const translations = {
     'failed_load_archived': 'Не удалось загрузить архивированные задачи',
     'failed_restore_task': 'Не удалось восстановить задачу',
     'failed_delete_all': 'Не удалось удалить все архивные задачи',
+    
+    // Offline indicator
+    'offline': 'Офлайн режим',
+    'online': 'Подключение восстановлено',
   },
   en: {
     // Common
@@ -212,6 +216,10 @@ const translations = {
     'failed_load_archived': 'Failed to load archived tasks',
     'failed_restore_task': 'Failed to restore task',
     'failed_delete_all': 'Failed to delete all archived tasks',
+    
+    // Offline indicator
+    'offline': 'Offline mode',
+    'online': 'Back online',
   },
 };
 

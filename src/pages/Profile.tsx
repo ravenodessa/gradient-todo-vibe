@@ -1,8 +1,11 @@
+import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { ProfileSettings } from '@/components/ProfileSettings';
 import { useLanguage } from '@/hooks/useLanguage';
+import { Card, CardContent } from '@/components/ui/card';
+
+const ProfileSettings = lazy(() => import('@/components/ProfileSettings').then(module => ({ default: module.ProfileSettings })));
 
 export default function Profile() {
   const { t } = useLanguage();
@@ -22,7 +25,15 @@ export default function Profile() {
           </h1>
         </div>
         
-        <ProfileSettings />
+        <Suspense fallback={
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center animate-pulse">{t('loading')}</div>
+            </CardContent>
+          </Card>
+        }>
+          <ProfileSettings />
+        </Suspense>
       </div>
     </main>
   );

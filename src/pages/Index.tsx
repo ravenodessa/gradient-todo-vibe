@@ -1,12 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useLanguage } from '@/hooks/useLanguage';
 import { UserAvatar } from '@/components/UserAvatar';
-import TodoApp from "@/components/TodoApp";
 import { Settings, Languages } from 'lucide-react';
+
+const TodoApp = lazy(() => import("@/components/TodoApp"));
 export default function Index() {
   const {
     user,
@@ -81,7 +82,13 @@ export default function Index() {
           </div>
         </div>
         </div>
-        <TodoApp />
+        <Suspense fallback={
+          <div className="glass-effect rounded-b-2xl p-8 shadow-2xl border border-white/20 border-t-0 text-center">
+            <div className="animate-pulse">{t('loading_tasks')}</div>
+          </div>
+        }>
+          <TodoApp />
+        </Suspense>
       </div>
     </main>;
 }

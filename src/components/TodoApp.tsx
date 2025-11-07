@@ -4,12 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Check, Archive, Edit2, X, CalendarIcon, Repeat, GripVertical } from 'lucide-react';
+import { Trash2, Plus, Check, Archive, Edit2, X, CalendarIcon, Repeat, GripVertical, Bell, BellOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
+import { useNotifications } from '@/hooks/useNotifications';
 import { format, addWeeks, startOfWeek } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -44,6 +45,7 @@ interface Todo {
   notes: string | null;
   recurrence_type: 'daily' | 'weekdays' | 'weekends' | null;
   order_index: number;
+  reminder_time: string | null;
 }
 
 export default function TodoApp() {
@@ -57,10 +59,19 @@ export default function TodoApp() {
   const [editingDate, setEditingDate] = useState<Date | undefined>();
   const [editingNotes, setEditingNotes] = useState('');
   const [editingRecurrence, setEditingRecurrence] = useState<string>('none');
+  const [editingReminderTime, setEditingReminderTime] = useState<string>('');
+  const [newTodoReminderTime, setNewTodoReminderTime] = useState<string>('');
   const { user } = useAuth();
   const { toast } = useToast();
   const { t, language } = useLanguage();
   const { isOnline, queueOperation } = useOfflineSync();
+  const { 
+    permission, 
+    requestPermission, 
+    scheduleNotification, 
+    cancelNotification,
+    isSupported 
+  } = useNotifications();
 
   const dateLocale = language === 'ru' ? ru : enUS;
 
@@ -69,6 +80,23 @@ export default function TodoApp() {
       fetchTodos();
     }
   }, [user]);
+
+  useEffect(() => {
+    // Schedule notifications for all tasks with reminder_time
+    todos.forEach(todo => {
+      if (todo.reminder_time && !todo.completed && permission === 'granted') {
+        const reminderDate = new Date(todo.reminder_time);
+        if (reminderDate > new Date()) {
+          scheduleNotification(
+            todo.id,
+            todo.title,
+            reminderDate,
+            t('reminder_time')
+          );
+        }
+      }
+    });
+  }, [todos, permission, scheduleNotification, t]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -125,12 +153,17 @@ export default function TodoApp() {
         ? Math.max(...todos.map(t => t.order_index || 0))
         : 0;
 
+      const reminderDateTime = newTodoReminderTime 
+        ? `${format(newTodoDate || new Date(), 'yyyy-MM-dd')}T${newTodoReminderTime}:00`
+        : null;
+
       const newTodoData = {
         title: validationResult.data.title,
         user_id: user.id,
         due_date: validationResult.data.due_date,
         recurrence_type: validationResult.data.recurrence_type,
         order_index: maxOrderIndex + 1,
+        reminder_time: reminderDateTime,
       };
 
       if (isOnline) {
@@ -167,6 +200,7 @@ export default function TodoApp() {
       setNewTodo('');
       setNewTodoDate(new Date());
       setNewTodoRecurrence('none');
+      setNewTodoReminderTime('');
       toast({
         title: t('success'),
         description: isOnline ? t('task_added') : t('offline_mode'),
@@ -295,6 +329,7 @@ export default function TodoApp() {
         });
       }
 
+      cancelNotification(id);
       setTodos(todos.filter(todo => todo.id !== id));
       toast({
         title: t('success'),
@@ -316,6 +351,7 @@ export default function TodoApp() {
     setEditingDate(todo.due_date ? new Date(todo.due_date) : undefined);
     setEditingNotes(todo.notes || '');
     setEditingRecurrence(todo.recurrence_type || 'none');
+    setEditingReminderTime(todo.reminder_time ? new Date(todo.reminder_time).toTimeString().slice(0, 5) : '');
   };
 
   const cancelEditing = () => {
@@ -324,6 +360,7 @@ export default function TodoApp() {
     setEditingDate(undefined);
     setEditingNotes('');
     setEditingRecurrence('none');
+    setEditingReminderTime('');
   };
 
   const saveEditing = async () => {
@@ -348,11 +385,16 @@ export default function TodoApp() {
         return;
       }
 
+      const reminderDateTime = editingReminderTime && editingDate
+        ? `${format(editingDate, 'yyyy-MM-dd')}T${editingReminderTime}:00`
+        : null;
+
       const updateData = { 
         title: validationResult.data.title,
         due_date: validationResult.data.due_date,
         notes: validationResult.data.notes,
-        recurrence_type: validationResult.data.recurrence_type
+        recurrence_type: validationResult.data.recurrence_type,
+        reminder_time: reminderDateTime,
       };
 
       if (isOnline) {
@@ -377,7 +419,8 @@ export default function TodoApp() {
           title: validationResult.data.title,
           due_date: validationResult.data.due_date,
           notes: validationResult.data.notes,
-          recurrence_type: validationResult.data.recurrence_type as any
+          recurrence_type: validationResult.data.recurrence_type as any,
+          reminder_time: reminderDateTime,
         } : t
       ));
       
@@ -386,6 +429,7 @@ export default function TodoApp() {
       setEditingDate(undefined);
       setEditingNotes('');
       setEditingRecurrence('none');
+      setEditingReminderTime('');
       
       toast({
         title: t('success'),
@@ -672,6 +716,39 @@ export default function TodoApp() {
                   {t('next_week')}
                 </Button>
               </div>
+              {isSupported && (
+                <div className="flex gap-2 items-center">
+                  <Input
+                    type="time"
+                    value={editingReminderTime}
+                    onChange={(e) => setEditingReminderTime(e.target.value)}
+                    className="bg-white/10 border-white/20 text-foreground h-8 text-xs w-32"
+                    placeholder="HH:MM"
+                  />
+                  {editingReminderTime && (
+                    <Button
+                      onClick={() => setEditingReminderTime('')}
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-xs"
+                    >
+                      <BellOff className="w-3 h-3 mr-1" />
+                      {t('remove_reminder')}
+                    </Button>
+                  )}
+                  {permission !== 'granted' && (
+                    <Button
+                      onClick={requestPermission}
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs bg-white/10 border-white/20"
+                    >
+                      <Bell className="w-3 h-3 mr-1" />
+                      {t('enable_notifications')}
+                    </Button>
+                  )}
+                </div>
+              )}
               <div className="flex gap-2 items-center">
                 <Button
                   onClick={saveEditing}
@@ -731,13 +808,21 @@ export default function TodoApp() {
                     {todo.recurrence_type === 'daily' && t('recurrence_daily')}
                     {todo.recurrence_type === 'weekdays' && t('recurrence_weekdays')}
                     {todo.recurrence_type === 'weekends' && t('recurrence_weekends')}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {!todo.completed && (
+                   </span>
+                 </div>
+               )}
+               {todo.reminder_time && (
+                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20">
+                   <Bell className="w-3 h-3 text-accent-foreground" />
+                   <span className="text-xs text-accent-foreground">
+                     {format(new Date(todo.reminder_time), "HH:mm", { locale: dateLocale })}
+                   </span>
+                 </div>
+               )}
+             </div>
+           </div>
+           
+           {!todo.completed && (
             <Button
               onClick={() => startEditing(todo)}
               variant="ghost"
@@ -889,6 +974,39 @@ export default function TodoApp() {
               {t('next_week')}
             </Button>
           </div>
+          {isSupported && (
+            <div className="flex gap-2 items-center flex-wrap">
+              <Input
+                type="time"
+                value={newTodoReminderTime}
+                onChange={(e) => setNewTodoReminderTime(e.target.value)}
+                className="bg-white/10 border-white/20 text-foreground h-9 text-xs w-32"
+                placeholder="HH:MM"
+              />
+              {newTodoReminderTime && (
+                <Button
+                  onClick={() => setNewTodoReminderTime('')}
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 text-xs"
+                >
+                  <BellOff className="w-3 h-3 mr-1" />
+                  {t('remove_reminder')}
+                </Button>
+              )}
+              {permission !== 'granted' && (
+                <Button
+                  onClick={requestPermission}
+                  variant="outline"
+                  size="sm"
+                  className="h-9 text-xs bg-white/10 border-white/20"
+                >
+                  <Bell className="w-3 h-3 mr-1" />
+                  {t('enable_notifications')}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Archive Completed Button */}

@@ -121,6 +121,18 @@ const translations = {
     
     // PWA Install
     'install_app': 'Установить приложение',
+    
+    // Notifications
+    'notifications': 'Уведомления',
+    'reminder_time': 'Время напоминания',
+    'set_reminder': 'Установить напоминание',
+    'remove_reminder': 'Удалить напоминание',
+    'notifications_not_supported': 'Уведомления не поддерживаются в вашем браузере',
+    'notifications_enabled': 'Уведомления включены',
+    'notifications_denied': 'Уведомления отклонены',
+    'enable_notifications': 'Включить уведомления',
+    'reminder_set': 'Напоминание установлено',
+    'reminder_removed': 'Напоминание удалено',
   },
   en: {
     // Common
@@ -232,6 +244,18 @@ const translations = {
     
     // PWA Install
     'install_app': 'Install App',
+    
+    // Notifications
+    'notifications': 'Notifications',
+    'reminder_time': 'Reminder Time',
+    'set_reminder': 'Set Reminder',
+    'remove_reminder': 'Remove Reminder',
+    'notifications_not_supported': 'Notifications are not supported in your browser',
+    'notifications_enabled': 'Notifications enabled',
+    'notifications_denied': 'Notifications denied',
+    'enable_notifications': 'Enable Notifications',
+    'reminder_set': 'Reminder set',
+    'reminder_removed': 'Reminder removed',
   },
 };
 

@@ -118,6 +118,9 @@ const translations = {
     'synced': 'Синхронизировано',
     'changes': 'изменений',
     'offline_mode': 'Изменения сохранятся локально',
+    
+    // PWA Install
+    'install_app': 'Установить приложение',
   },
   en: {
     // Common
@@ -226,6 +229,9 @@ const translations = {
     'synced': 'Synced',
     'changes': 'changes',
     'offline_mode': 'Changes will be saved locally',
+    
+    // PWA Install
+    'install_app': 'Install App',
   },
 };
 

@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useLanguage } from '@/hooks/useLanguage';
 import { UserAvatar } from '@/components/UserAvatar';
+import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { Settings, Languages } from 'lucide-react';
 
 const TodoApp = lazy(() => import("@/components/TodoApp"));
@@ -52,6 +53,7 @@ export default function Index() {
               {t('your_tasks')}
             </h1>
           <div className="flex items-center gap-2">
+            <PWAInstallButton />
             <Button 
               variant="outline" 
               size="sm" 

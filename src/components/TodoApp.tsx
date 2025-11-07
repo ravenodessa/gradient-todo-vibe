@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useOfflineSync } from '@/hooks/useOfflineSync';
 import { format, addWeeks, startOfWeek } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -59,6 +60,7 @@ export default function TodoApp() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { t, language } = useLanguage();
+  const { isOnline, queueOperation } = useOfflineSync();
 
   const dateLocale = language === 'ru' ? ru : enUS;
 
@@ -123,29 +125,51 @@ export default function TodoApp() {
         ? Math.max(...todos.map(t => t.order_index || 0))
         : 0;
 
-      const { data, error } = await supabase
-        .from('todos')
-        .insert([
-          {
-            title: validationResult.data.title,
-            user_id: user.id,
-            due_date: validationResult.data.due_date,
-            recurrence_type: validationResult.data.recurrence_type,
-            order_index: maxOrderIndex + 1,
-          },
-        ])
-        .select()
-        .single();
+      const newTodoData = {
+        title: validationResult.data.title,
+        user_id: user.id,
+        due_date: validationResult.data.due_date,
+        recurrence_type: validationResult.data.recurrence_type,
+        order_index: maxOrderIndex + 1,
+      };
 
-      if (error) throw error;
-      
-      setTodos([...todos, data as Todo]);
+      if (isOnline) {
+        const { data, error } = await supabase
+          .from('todos')
+          .insert([newTodoData])
+          .select()
+          .single();
+
+        if (error) throw error;
+        
+        setTodos([...todos, data as Todo]);
+      } else {
+        // Offline: create temporary todo with local ID
+        const tempTodo = {
+          ...newTodoData,
+          id: `temp-${Date.now()}`,
+          completed: false,
+          archived: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          notes: null,
+        } as Todo;
+        
+        setTodos([...todos, tempTodo]);
+        queueOperation({
+          id: tempTodo.id,
+          type: 'insert',
+          table: 'todos',
+          data: newTodoData,
+        });
+      }
+
       setNewTodo('');
       setNewTodoDate(new Date());
       setNewTodoRecurrence('none');
       toast({
         title: t('success'),
-        description: t('task_added'),
+        description: isOnline ? t('task_added') : t('offline_mode'),
       });
     } catch (error: any) {
       toast({
@@ -225,12 +249,21 @@ export default function TodoApp() {
         });
       } else {
         // Обычное переключение статуса
-        const { error } = await supabase
-          .from('todos')
-          .update({ completed: !todo.completed })
-          .eq('id', id);
+        if (isOnline) {
+          const { error } = await supabase
+            .from('todos')
+            .update({ completed: !todo.completed })
+            .eq('id', id);
 
-        if (error) throw error;
+          if (error) throw error;
+        } else {
+          queueOperation({
+            id,
+            type: 'update',
+            table: 'todos',
+            data: { completed: !todo.completed },
+          });
+        }
 
         setTodos(todos.map(t =>
           t.id === id ? { ...t, completed: !t.completed } : t
@@ -247,17 +280,25 @@ export default function TodoApp() {
 
   const deleteTodo = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('todos')
-        .delete()
-        .eq('id', id);
+      if (isOnline) {
+        const { error } = await supabase
+          .from('todos')
+          .delete()
+          .eq('id', id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        queueOperation({
+          id,
+          type: 'delete',
+          table: 'todos',
+        });
+      }
 
       setTodos(todos.filter(todo => todo.id !== id));
       toast({
         title: t('success'),
-        description: t('task_deleted'),
+        description: isOnline ? t('task_deleted') : t('offline_mode'),
       });
     } catch (error: any) {
       toast({
@@ -307,17 +348,28 @@ export default function TodoApp() {
         return;
       }
 
-      const { error } = await supabase
-        .from('todos')
-        .update({ 
-          title: validationResult.data.title,
-          due_date: validationResult.data.due_date,
-          notes: validationResult.data.notes,
-          recurrence_type: validationResult.data.recurrence_type
-        })
-        .eq('id', editingId);
+      const updateData = { 
+        title: validationResult.data.title,
+        due_date: validationResult.data.due_date,
+        notes: validationResult.data.notes,
+        recurrence_type: validationResult.data.recurrence_type
+      };
 
-      if (error) throw error;
+      if (isOnline) {
+        const { error } = await supabase
+          .from('todos')
+          .update(updateData)
+          .eq('id', editingId);
+
+        if (error) throw error;
+      } else {
+        queueOperation({
+          id: editingId,
+          type: 'update',
+          table: 'todos',
+          data: updateData,
+        });
+      }
 
       setTodos(todos.map(t =>
         t.id === editingId ? { 
@@ -337,7 +389,7 @@ export default function TodoApp() {
       
       toast({
         title: t('success'),
-        description: t('task_updated'),
+        description: isOnline ? t('task_updated') : t('offline_mode'),
       });
     } catch (error: any) {
       toast({

@@ -115,6 +115,9 @@ const translations = {
     // Offline indicator
     'offline': 'Офлайн режим',
     'online': 'Подключение восстановлено',
+    'synced': 'Синхронизировано',
+    'changes': 'изменений',
+    'offline_mode': 'Изменения сохранятся локально',
   },
   en: {
     // Common
@@ -220,6 +223,9 @@ const translations = {
     // Offline indicator
     'offline': 'Offline mode',
     'online': 'Back online',
+    'synced': 'Synced',
+    'changes': 'changes',
+    'offline_mode': 'Changes will be saved locally',
   },
 };
 

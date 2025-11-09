@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
@@ -54,6 +54,7 @@ export default function TodoApp() {
   const [newTodoDate, setNewTodoDate] = useState<Date | undefined>(new Date());
   const [newTodoRecurrence, setNewTodoRecurrence] = useState<string>('none');
   const [loading, setLoading] = useState(true);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
   const [editingDate, setEditingDate] = useState<Date | undefined>();
@@ -97,6 +98,13 @@ export default function TodoApp() {
       }
     });
   }, [todos, permission, scheduleNotification, t]);
+
+  // Focus input on mount and after loading
+  useEffect(() => {
+    if (!loading) {
+      inputRef.current?.focus();
+    }
+  }, [loading]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -201,6 +209,10 @@ export default function TodoApp() {
       setNewTodoDate(new Date());
       setNewTodoRecurrence('none');
       setNewTodoReminderTime('');
+      
+      // Focus input after adding task
+      setTimeout(() => inputRef.current?.focus(), 0);
+      
       toast({
         title: t('success'),
         description: isOnline ? t('task_added') : t('offline_mode'),
@@ -892,6 +904,7 @@ export default function TodoApp() {
         <div className="space-y-3 mb-8">
           <div className="flex gap-3">
             <Input
+              ref={inputRef}
               value={newTodo}
               onChange={(e) => setNewTodo(e.target.value)}
               onKeyPress={handleKeyPress}

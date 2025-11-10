@@ -106,6 +106,55 @@ export default function TodoApp() {
     }
   }, [loading]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input/textarea
+      const target = e.target as HTMLElement;
+      const isInputFocused = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+      
+      // Ctrl+N: Focus on new task input
+      if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault();
+        inputRef.current?.focus();
+        return;
+      }
+
+      // Ctrl+E: Start editing first incomplete task
+      if (e.ctrlKey && e.key === 'e') {
+        e.preventDefault();
+        if (editingId) {
+          // If already editing, save
+          saveEditing();
+        } else {
+          // Find first incomplete task
+          const firstIncompleteTodo = todos.find(t => !t.completed);
+          if (firstIncompleteTodo) {
+            startEditing(firstIncompleteTodo);
+          }
+        }
+        return;
+      }
+
+      // Escape: Cancel editing
+      if (e.key === 'Escape' && editingId) {
+        e.preventDefault();
+        cancelEditing();
+        return;
+      }
+
+      // Ctrl+S: Save editing
+      if (e.ctrlKey && e.key === 's' && editingId) {
+        e.preventDefault();
+        saveEditing();
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [editingId, todos]);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {

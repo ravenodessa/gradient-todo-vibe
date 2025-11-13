@@ -113,15 +113,15 @@ export default function TodoApp() {
       const target = e.target as HTMLElement;
       const isInputFocused = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
       
-      // Ctrl+N: Focus on new task input
-      if (e.ctrlKey && e.key === 'n') {
+      // Ctrl+N: Focus on new task input (only if not typing)
+      if (e.ctrlKey && e.key === 'n' && !isInputFocused) {
         e.preventDefault();
         inputRef.current?.focus();
         return;
       }
 
-      // Ctrl+E: Start editing first incomplete task
-      if (e.ctrlKey && e.key === 'e') {
+      // Ctrl+E: Start editing first incomplete task (only if not typing)
+      if (e.ctrlKey && e.key === 'e' && !isInputFocused) {
         e.preventDefault();
         if (editingId) {
           // If already editing, save

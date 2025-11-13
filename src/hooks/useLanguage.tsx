@@ -133,6 +133,15 @@ const translations = {
     'enable_notifications': 'Включить уведомления',
     'reminder_set': 'Напоминание установлено',
     'reminder_removed': 'Напоминание удалено',
+    
+    // Keyboard shortcuts
+    'keyboard_shortcuts': 'Горячие клавиши',
+    'shortcuts_description': 'Используйте эти клавиши для быстрого управления задачами',
+    'shortcut_new_task': 'Фокус на поле новой задачи',
+    'shortcut_edit_task': 'Редактировать первую незавершенную задачу',
+    'shortcut_save': 'Сохранить изменения (при редактировании)',
+    'shortcut_cancel': 'Отменить редактирование',
+    'close': 'Закрыть',
   },
   en: {
     // Common
@@ -256,6 +265,15 @@ const translations = {
     'enable_notifications': 'Enable Notifications',
     'reminder_set': 'Reminder set',
     'reminder_removed': 'Reminder removed',
+    
+    // Keyboard shortcuts
+    'keyboard_shortcuts': 'Keyboard Shortcuts',
+    'shortcuts_description': 'Use these keys for quick task management',
+    'shortcut_new_task': 'Focus on new task field',
+    'shortcut_edit_task': 'Edit first incomplete task',
+    'shortcut_save': 'Save changes (when editing)',
+    'shortcut_cancel': 'Cancel editing',
+    'close': 'Close',
   },
 };
 

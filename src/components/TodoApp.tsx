@@ -74,6 +74,8 @@ interface SortableItemProps {
   handleEditKeyPress: (e: React.KeyboardEvent) => void;
   renderNotesWithLinks: (notes: string) => React.ReactNode;
   requestPermission: () => void;
+  index: number;
+  showBadge: boolean;
 }
 
 const SortableItem = memo(({ 
@@ -101,6 +103,8 @@ const SortableItem = memo(({
   handleEditKeyPress,
   renderNotesWithLinks,
   requestPermission,
+  index,
+  showBadge,
 }: SortableItemProps) => {
   const {
     attributes,
@@ -130,6 +134,11 @@ const SortableItem = memo(({
       >
         <GripVertical className="w-4 h-4 text-muted-foreground" />
       </div>
+      {showBadge && (
+        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold shrink-0">
+          {index + 1}
+        </div>
+      )}
     <Button
       onClick={() => toggleTodo(todo.id)}
       variant="ghost"
@@ -967,7 +976,7 @@ export default function TodoApp() {
   };
 
 
-  const renderTodoSection = (title: string, sectionTodos: Todo[], emoji: string) => {
+  const renderTodoSection = (title: string, sectionTodos: Todo[], emoji: string, showBadge: boolean = false) => {
     if (sectionTodos.length === 0) return null;
 
     const sortedTodos = sectionTodos.sort((a, b) => {
@@ -994,7 +1003,7 @@ export default function TodoApp() {
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-3">
-              {sortedTodos.map(todo => (
+              {sortedTodos.map((todo, index) => (
                 <SortableItem 
                   key={todo.id} 
                   todo={todo}
@@ -1021,6 +1030,8 @@ export default function TodoApp() {
                   handleEditKeyPress={handleEditKeyPress}
                   renderNotesWithLinks={renderNotesWithLinks}
                   requestPermission={requestPermission}
+                  index={index}
+                  showBadge={showBadge}
                 />
               ))}
             </div>
@@ -1221,10 +1232,10 @@ export default function TodoApp() {
           </div>
         ) : (
           <>
-            {renderTodoSection(t('overdue'), groupedTodos.overdue, "⚠️")}
-            {renderTodoSection(t('today'), groupedTodos.today, "📅")}
-            {renderTodoSection(t('tomorrow'), groupedTodos.tomorrow, "⏰")}
-            {renderTodoSection(t('later'), groupedTodos.later, "📆")}
+            {renderTodoSection(t('overdue'), groupedTodos.overdue, "⚠️", false)}
+            {renderTodoSection(t('today'), groupedTodos.today, "📅", true)}
+            {renderTodoSection(t('tomorrow'), groupedTodos.tomorrow, "⏰", true)}
+            {renderTodoSection(t('later'), groupedTodos.later, "📆", true)}
           </>
         )}
 

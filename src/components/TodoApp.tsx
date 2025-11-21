@@ -572,6 +572,10 @@ export default function TodoApp() {
   const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
 
   const groupedTodos = {
+    overdue: todos.filter(todo => {
+      if (!todo.due_date || todo.completed) return false;
+      return todo.due_date < todayStr;
+    }),
     today: todos.filter(todo => todo.due_date === todayStr),
     tomorrow: todos.filter(todo => todo.due_date === tomorrowStr),
     later: todos.filter(todo => {
@@ -1138,6 +1142,7 @@ export default function TodoApp() {
           </div>
         ) : (
           <>
+            {renderTodoSection(t('overdue'), groupedTodos.overdue, "⚠️")}
             {renderTodoSection(t('today'), groupedTodos.today, "📅")}
             {renderTodoSection(t('tomorrow'), groupedTodos.tomorrow, "⏰")}
             {renderTodoSection(t('later'), groupedTodos.later, "📆")}

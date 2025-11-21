@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import { useNotifications } from '@/hooks/useNotifications';
-import { format, addWeeks, startOfWeek } from 'date-fns';
+import { format, addWeeks, startOfWeek, Locale } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { todoSchema } from '@/lib/validation';
@@ -48,6 +48,322 @@ interface Todo {
   order_index: number;
   reminder_time: string | null;
 }
+
+interface SortableItemProps {
+  todo: Todo;
+  editingId: string | null;
+  editingText: string;
+  editingNotes: string;
+  editingDate: Date | undefined;
+  editingRecurrence: string;
+  editingReminderTime: string;
+  dateLocale: Locale;
+  isSupported: boolean;
+  permission: NotificationPermission;
+  t: (key: string) => string;
+  setEditingText: (text: string) => void;
+  setEditingNotes: (notes: string) => void;
+  setEditingDate: (date: Date | undefined) => void;
+  setEditingRecurrence: (recurrence: string) => void;
+  setEditingReminderTime: (time: string) => void;
+  toggleTodo: (id: string) => void;
+  startEditing: (todo: Todo) => void;
+  deleteTodo: (id: string) => void;
+  saveEditing: () => void;
+  cancelEditing: () => void;
+  handleEditKeyPress: (e: React.KeyboardEvent) => void;
+  renderNotesWithLinks: (notes: string) => React.ReactNode;
+  requestPermission: () => void;
+}
+
+const SortableItem = memo(({ 
+  todo, 
+  editingId,
+  editingText,
+  editingNotes,
+  editingDate,
+  editingRecurrence,
+  editingReminderTime,
+  dateLocale,
+  isSupported,
+  permission,
+  t,
+  setEditingText,
+  setEditingNotes,
+  setEditingDate,
+  setEditingRecurrence,
+  setEditingReminderTime,
+  toggleTodo,
+  startEditing,
+  deleteTodo,
+  saveEditing,
+  cancelEditing,
+  handleEditKeyPress,
+  renderNotesWithLinks,
+  requestPermission,
+}: SortableItemProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: todo.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200"
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing touch-none"
+      >
+        <GripVertical className="w-4 h-4 text-muted-foreground" />
+      </div>
+    <Button
+      onClick={() => toggleTodo(todo.id)}
+      variant="ghost"
+      size="icon"
+      className={`w-6 h-6 rounded-full border-2 transition-all duration-200 ${
+        todo.completed
+          ? 'bg-gradient-to-r from-primary to-secondary border-transparent text-white'
+          : 'border-muted-foreground/30 hover:border-primary'
+      }`}
+    >
+      {todo.completed && <Check className="w-3 h-3" />}
+    </Button>
+    
+    {editingId === todo.id ? (
+      <div className="flex-1 flex flex-col gap-2">
+        <Input
+          value={editingText}
+          onChange={(e) => setEditingText(e.target.value)}
+          onKeyDown={handleEditKeyPress}
+          className="h-8 bg-white/10 border-white/20 text-foreground"
+          autoFocus
+        />
+        <div className="relative">
+          <Input
+            value={editingNotes}
+            onChange={(e) => setEditingNotes(e.target.value)}
+            placeholder="Заметки (макс. 200 символов)"
+            className="h-8 bg-white/10 border-white/20 text-foreground text-xs pr-12"
+          />
+          <span className={`absolute right-2 top-1/2 -translate-y-1/2 text-xs ${
+            editingNotes.length > 200 ? 'text-red-400' : 'text-muted-foreground'
+          }`}>
+            {editingNotes.length}/200
+          </span>
+        </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2 items-center flex-wrap">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "justify-start text-left font-normal bg-white/10 border-white/20 h-8 text-xs",
+                      !editingDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="w-3 h-3 mr-1" />
+                    {editingDate ? format(editingDate, "EEE dd MMM", { locale: dateLocale }) : t('date')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={editingDate}
+                    onSelect={setEditingDate}
+                    className="pointer-events-auto"
+                    initialFocus
+                  />
+                  <div className="p-2 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingDate(undefined)}
+                      className="w-full h-7 text-xs"
+                    >
+                      {t('remove_date')}
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Select value={editingRecurrence} onValueChange={setEditingRecurrence}>
+                <SelectTrigger className="bg-white/10 border-white/20 h-8 text-xs w-auto">
+                  <Repeat className="w-3 h-3 mr-1" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t('recurrence_none')}</SelectItem>
+                  <SelectItem value="daily">{t('recurrence_daily')}</SelectItem>
+                  <SelectItem value="weekdays">{t('recurrence_weekdays')}</SelectItem>
+                  <SelectItem value="weekends">{t('recurrence_weekends')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={() => {
+                  const tomorrow = new Date();
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  setEditingDate(tomorrow);
+                }}
+                variant="outline"
+                className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8"
+              >
+                {t('tomorrow')}
+              </Button>
+              <Button
+                onClick={() => {
+                  const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
+                  setEditingDate(nextMonday);
+                }}
+                variant="outline"
+                className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8 w-full sm:w-auto"
+              >
+                {t('next_week')}
+              </Button>
+            </div>
+            {isSupported && (
+              <div className="flex gap-2 items-center">
+                <Input
+                  type="time"
+                  value={editingReminderTime}
+                  onChange={(e) => setEditingReminderTime(e.target.value)}
+                  className="bg-white/10 border-white/20 text-foreground h-8 text-xs w-32"
+                  placeholder="HH:MM"
+                />
+                {editingReminderTime && (
+                  <Button
+                    onClick={() => setEditingReminderTime('')}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-xs"
+                  >
+                    <BellOff className="w-3 h-3 mr-1" />
+                    {t('remove_reminder')}
+                  </Button>
+                )}
+                {permission !== 'granted' && (
+                  <Button
+                    onClick={requestPermission}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs bg-white/10 border-white/20"
+                  >
+                    <Bell className="w-3 h-3 mr-1" />
+                    {t('enable_notifications')}
+                  </Button>
+                )}
+              </div>
+            )}
+            <div className="flex gap-2 items-center">
+              <Button
+                onClick={saveEditing}
+                variant="ghost"
+                size="icon"
+                className="w-8 h-8 text-green-400 hover:text-green-300 hover:bg-green-400/10"
+              >
+                <Check className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={cancelEditing}
+                variant="ghost"
+                size="icon"
+                className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+      </div>
+    ) : (
+      <>
+        <div className="flex-1">
+          <span
+            className={`block transition-all duration-200 ${
+              todo.completed
+                ? 'line-through text-muted-foreground'
+                : 'text-foreground'
+            }`}
+            onClick={() => !todo.completed && startEditing(todo)}
+            style={{ cursor: !todo.completed ? 'pointer' : 'default' }}
+          >
+            {todo.title}
+          </span>
+          {todo.notes && (
+            <div className="mt-1 text-xs text-muted-foreground break-words break-all">
+              {renderNotesWithLinks(todo.notes)}
+            </div>
+          )}
+          <div className="flex items-center gap-2 flex-wrap mt-1">
+            {todo.due_date && (
+              <div className="flex items-center gap-1">
+                <CalendarIcon className="w-3 h-3 text-muted-foreground" />
+                <span className={`text-xs ${
+                  new Date(todo.due_date) < new Date() && !todo.completed
+                    ? 'text-red-400'
+                    : 'text-muted-foreground'
+                }`}>
+                  {format(new Date(todo.due_date), "EEE dd MMM yyyy", { locale: dateLocale })}
+                </span>
+              </div>
+            )}
+            {todo.recurrence_type && (
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                <Repeat className="w-3 h-3 text-primary" />
+                <span className="text-xs text-primary">
+                  {todo.recurrence_type === 'daily' && t('recurrence_daily')}
+                  {todo.recurrence_type === 'weekdays' && t('recurrence_weekdays')}
+                  {todo.recurrence_type === 'weekends' && t('recurrence_weekends')}
+                 </span>
+               </div>
+             )}
+             {todo.reminder_time && (
+               <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20">
+                 <Bell className="w-3 h-3 text-accent-foreground" />
+                 <span className="text-xs text-accent-foreground">
+                   {format(new Date(todo.reminder_time), "HH:mm", { locale: dateLocale })}
+                 </span>
+               </div>
+             )}
+           </div>
+         </div>
+         
+         {!todo.completed && (
+          <Button
+            onClick={() => startEditing(todo)}
+            variant="ghost"
+            size="icon"
+            className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+          >
+            <Edit2 className="w-4 h-4" />
+          </Button>
+        )}
+      </>
+    )}
+    
+      <Button
+        onClick={() => deleteTodo(todo.id)}
+        variant="ghost"
+        size="icon"
+        className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+      >
+        <Trash2 className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+});
 
 export default function TodoApp() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -650,269 +966,6 @@ export default function TodoApp() {
     });
   };
 
-  const SortableItem = ({ todo }: { todo: Todo }) => {
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-    } = useSortable({ id: todo.id });
-
-    const style = {
-      transform: CSS.Transform.toString(transform),
-      transition,
-      opacity: isDragging ? 0.5 : 1,
-    };
-
-    return (
-      <div
-        ref={setNodeRef}
-        style={style}
-        className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200"
-      >
-        <div
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing touch-none"
-        >
-          <GripVertical className="w-4 h-4 text-muted-foreground" />
-        </div>
-      <Button
-        onClick={() => toggleTodo(todo.id)}
-        variant="ghost"
-        size="icon"
-        className={`w-6 h-6 rounded-full border-2 transition-all duration-200 ${
-          todo.completed
-            ? 'bg-gradient-to-r from-primary to-secondary border-transparent text-white'
-            : 'border-muted-foreground/30 hover:border-primary'
-        }`}
-      >
-        {todo.completed && <Check className="w-3 h-3" />}
-      </Button>
-      
-      {editingId === todo.id ? (
-        <div className="flex-1 flex flex-col gap-2">
-          <Input
-            value={editingText}
-            onChange={(e) => setEditingText(e.target.value)}
-            onKeyDown={handleEditKeyPress}
-            className="h-8 bg-white/10 border-white/20 text-foreground"
-            autoFocus
-          />
-          <div className="relative">
-            <Input
-              value={editingNotes}
-              onChange={(e) => setEditingNotes(e.target.value)}
-              placeholder="Заметки (макс. 200 символов)"
-              className="h-8 bg-white/10 border-white/20 text-foreground text-xs pr-12"
-            />
-            <span className={`absolute right-2 top-1/2 -translate-y-1/2 text-xs ${
-              editingNotes.length > 200 ? 'text-red-400' : 'text-muted-foreground'
-            }`}>
-              {editingNotes.length}/200
-            </span>
-          </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex gap-2 items-center flex-wrap">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "justify-start text-left font-normal bg-white/10 border-white/20 h-8 text-xs",
-                        !editingDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="w-3 h-3 mr-1" />
-                      {editingDate ? format(editingDate, "EEE dd MMM", { locale: dateLocale }) : t('date')}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={editingDate}
-                      onSelect={setEditingDate}
-                      className="pointer-events-auto"
-                      initialFocus
-                    />
-                    <div className="p-2 border-t">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingDate(undefined)}
-                        className="w-full h-7 text-xs"
-                      >
-                        {t('remove_date')}
-                      </Button>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-                <Select value={editingRecurrence} onValueChange={setEditingRecurrence}>
-                  <SelectTrigger className="bg-white/10 border-white/20 h-8 text-xs w-auto">
-                    <Repeat className="w-3 h-3 mr-1" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{t('recurrence_none')}</SelectItem>
-                    <SelectItem value="daily">{t('recurrence_daily')}</SelectItem>
-                    <SelectItem value="weekdays">{t('recurrence_weekdays')}</SelectItem>
-                    <SelectItem value="weekends">{t('recurrence_weekends')}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  onClick={() => {
-                    const tomorrow = new Date();
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    setEditingDate(tomorrow);
-                  }}
-                  variant="outline"
-                  className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8"
-                >
-                  {t('tomorrow')}
-                </Button>
-                <Button
-                  onClick={() => {
-                    const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
-                    setEditingDate(nextMonday);
-                  }}
-                  variant="outline"
-                  className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8 w-full sm:w-auto"
-                >
-                  {t('next_week')}
-                </Button>
-              </div>
-              {isSupported && (
-                <div className="flex gap-2 items-center">
-                  <Input
-                    type="time"
-                    value={editingReminderTime}
-                    onChange={(e) => setEditingReminderTime(e.target.value)}
-                    className="bg-white/10 border-white/20 text-foreground h-8 text-xs w-32"
-                    placeholder="HH:MM"
-                  />
-                  {editingReminderTime && (
-                    <Button
-                      onClick={() => setEditingReminderTime('')}
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 text-xs"
-                    >
-                      <BellOff className="w-3 h-3 mr-1" />
-                      {t('remove_reminder')}
-                    </Button>
-                  )}
-                  {permission !== 'granted' && (
-                    <Button
-                      onClick={requestPermission}
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs bg-white/10 border-white/20"
-                    >
-                      <Bell className="w-3 h-3 mr-1" />
-                      {t('enable_notifications')}
-                    </Button>
-                  )}
-                </div>
-              )}
-              <div className="flex gap-2 items-center">
-                <Button
-                  onClick={saveEditing}
-                  variant="ghost"
-                  size="icon"
-                  className="w-8 h-8 text-green-400 hover:text-green-300 hover:bg-green-400/10"
-                >
-                  <Check className="w-4 h-4" />
-                </Button>
-                <Button
-                  onClick={cancelEditing}
-                  variant="ghost"
-                  size="icon"
-                  className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-        </div>
-      ) : (
-        <>
-          <div className="flex-1">
-            <span
-              className={`block transition-all duration-200 ${
-                todo.completed
-                  ? 'line-through text-muted-foreground'
-                  : 'text-foreground'
-              }`}
-              onClick={() => !todo.completed && startEditing(todo)}
-              style={{ cursor: !todo.completed ? 'pointer' : 'default' }}
-            >
-              {todo.title}
-            </span>
-            {todo.notes && (
-              <div className="mt-1 text-xs text-muted-foreground break-words break-all">
-                {renderNotesWithLinks(todo.notes)}
-              </div>
-            )}
-            <div className="flex items-center gap-2 flex-wrap mt-1">
-              {todo.due_date && (
-                <div className="flex items-center gap-1">
-                  <CalendarIcon className="w-3 h-3 text-muted-foreground" />
-                  <span className={`text-xs ${
-                    new Date(todo.due_date) < new Date() && !todo.completed
-                      ? 'text-red-400'
-                      : 'text-muted-foreground'
-                  }`}>
-                    {format(new Date(todo.due_date), "EEE dd MMM yyyy", { locale: dateLocale })}
-                  </span>
-                </div>
-              )}
-              {todo.recurrence_type && (
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-                  <Repeat className="w-3 h-3 text-primary" />
-                  <span className="text-xs text-primary">
-                    {todo.recurrence_type === 'daily' && t('recurrence_daily')}
-                    {todo.recurrence_type === 'weekdays' && t('recurrence_weekdays')}
-                    {todo.recurrence_type === 'weekends' && t('recurrence_weekends')}
-                   </span>
-                 </div>
-               )}
-               {todo.reminder_time && (
-                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20">
-                   <Bell className="w-3 h-3 text-accent-foreground" />
-                   <span className="text-xs text-accent-foreground">
-                     {format(new Date(todo.reminder_time), "HH:mm", { locale: dateLocale })}
-                   </span>
-                 </div>
-               )}
-             </div>
-           </div>
-           
-           {!todo.completed && (
-            <Button
-              onClick={() => startEditing(todo)}
-              variant="ghost"
-              size="icon"
-              className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
-            >
-              <Edit2 className="w-4 h-4" />
-            </Button>
-          )}
-        </>
-      )}
-      
-        <Button
-          onClick={() => deleteTodo(todo.id)}
-          variant="ghost"
-          size="icon"
-          className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
-      </div>
-    );
-  };
 
   const renderTodoSection = (title: string, sectionTodos: Todo[], emoji: string) => {
     if (sectionTodos.length === 0) return null;
@@ -942,7 +995,33 @@ export default function TodoApp() {
           >
             <div className="space-y-3">
               {sortedTodos.map(todo => (
-                <SortableItem key={todo.id} todo={todo} />
+                <SortableItem 
+                  key={todo.id} 
+                  todo={todo}
+                  editingId={editingId}
+                  editingText={editingText}
+                  editingNotes={editingNotes}
+                  editingDate={editingDate}
+                  editingRecurrence={editingRecurrence}
+                  editingReminderTime={editingReminderTime}
+                  dateLocale={dateLocale}
+                  isSupported={isSupported}
+                  permission={permission}
+                  t={t}
+                  setEditingText={setEditingText}
+                  setEditingNotes={setEditingNotes}
+                  setEditingDate={setEditingDate}
+                  setEditingRecurrence={setEditingRecurrence}
+                  setEditingReminderTime={setEditingReminderTime}
+                  toggleTodo={toggleTodo}
+                  startEditing={startEditing}
+                  deleteTodo={deleteTodo}
+                  saveEditing={saveEditing}
+                  cancelEditing={cancelEditing}
+                  handleEditKeyPress={handleEditKeyPress}
+                  renderNotesWithLinks={renderNotesWithLinks}
+                  requestPermission={requestPermission}
+                />
               ))}
             </div>
           </SortableContext>

@@ -71,6 +71,7 @@ interface SortableItemProps {
   renderNotesWithLinks: (notes: string) => React.ReactNode;
   index: number;
   showBadge: boolean;
+  onMoveToTop?: (todoId: string) => void;
 }
 
 const SortableItem = memo(({ 
@@ -95,6 +96,7 @@ const SortableItem = memo(({
   renderNotesWithLinks,
   index,
   showBadge,
+  onMoveToTop,
 }: SortableItemProps) => {
   const {
     attributes,
@@ -125,7 +127,11 @@ const SortableItem = memo(({
         <GripVertical className="w-4 h-4 text-muted-foreground" />
       </div>
       {showBadge && (
-        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold shrink-0">
+        <div 
+          className="flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold shrink-0 cursor-pointer hover:bg-red-600 transition-colors select-none"
+          onDoubleClick={() => onMoveToTop?.(todo.id)}
+          title="Двойной клик - переместить в начало"
+        >
           {index + 1}
         </div>
       )}
@@ -860,6 +866,45 @@ export default function TodoApp() {
     }
   };
 
+  const moveToTop = async (todoId: string, sectionTodos: Todo[]) => {
+    const todoIndex = sectionTodos.findIndex(t => t.id === todoId);
+    if (todoIndex <= 0) return; // Already at top or not found
+
+    const reorderedTodos = arrayMove(sectionTodos, todoIndex, 0);
+    
+    // Update order_index for all items in this section
+    const updatedTodos = reorderedTodos.map((todo, index) => ({
+      ...todo,
+      order_index: index,
+    }));
+
+    // Optimistically update UI
+    setTodos(prevTodos => {
+      const otherTodos = prevTodos.filter(t => !sectionTodos.find(st => st.id === t.id));
+      return [...otherTodos, ...updatedTodos];
+    });
+
+    // Save to database
+    try {
+      const updates = updatedTodos.map((todo) =>
+        supabase
+          .from('todos')
+          .update({ order_index: todo.order_index })
+          .eq('id', todo.id)
+      );
+
+      await Promise.all(updates);
+    } catch (error: any) {
+      toast({
+        title: t('error'),
+        description: 'Не удалось сохранить порядок задач',
+        variant: "destructive",
+      });
+      // Revert on error
+      fetchTodos();
+    }
+  };
+
   const renderNotesWithLinks = (notes: string) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const parts = notes.split(urlRegex);
@@ -935,6 +980,7 @@ export default function TodoApp() {
                   renderNotesWithLinks={renderNotesWithLinks}
                   index={index}
                   showBadge={showBadge}
+                  onMoveToTop={(todoId) => moveToTop(todoId, sortedTodos)}
                 />
               ))}
             </div>

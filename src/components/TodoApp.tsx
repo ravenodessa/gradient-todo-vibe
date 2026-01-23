@@ -60,8 +60,8 @@ interface SortableItemProps {
   t: (key: string) => string;
   setEditingText: (text: string) => void;
   setEditingNotes: (notes: string) => void;
-  setEditingDate: (date: Date | undefined) => void;
-  setEditingRecurrence: (recurrence: string) => void;
+  setEditingDateAndSave: (date: Date | undefined) => void;
+  setEditingRecurrenceAndSave: (recurrence: string) => void;
   toggleTodo: (id: string) => void;
   startEditing: (todo: Todo) => void;
   deleteTodo: (id: string) => void;
@@ -72,6 +72,8 @@ interface SortableItemProps {
   index: number;
   showBadge: boolean;
   onMoveToTop?: (todoId: string) => void;
+  setTomorrowAndSave: () => void;
+  setNextWeekAndSave: () => void;
 }
 
 const SortableItem = memo(({ 
@@ -85,8 +87,8 @@ const SortableItem = memo(({
   t,
   setEditingText,
   setEditingNotes,
-  setEditingDate,
-  setEditingRecurrence,
+  setEditingDateAndSave,
+  setEditingRecurrenceAndSave,
   toggleTodo,
   startEditing,
   deleteTodo,
@@ -97,6 +99,8 @@ const SortableItem = memo(({
   index,
   showBadge,
   onMoveToTop,
+  setTomorrowAndSave,
+  setNextWeekAndSave,
 }: SortableItemProps) => {
   const {
     attributes,
@@ -189,7 +193,7 @@ const SortableItem = memo(({
                   <Calendar
                     mode="single"
                     selected={editingDate}
-                    onSelect={setEditingDate}
+                    onSelect={setEditingDateAndSave}
                     className="pointer-events-auto"
                     initialFocus
                   />
@@ -197,7 +201,7 @@ const SortableItem = memo(({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setEditingDate(undefined)}
+                      onClick={() => setEditingDateAndSave(undefined)}
                       className="w-full h-7 text-xs"
                     >
                       {t('remove_date')}
@@ -205,7 +209,7 @@ const SortableItem = memo(({
                   </div>
                 </PopoverContent>
               </Popover>
-              <Select value={editingRecurrence} onValueChange={setEditingRecurrence}>
+              <Select value={editingRecurrence} onValueChange={setEditingRecurrenceAndSave}>
                 <SelectTrigger className="bg-white/10 border-white/20 h-8 text-xs w-auto">
                   <Repeat className="w-3 h-3 mr-1" />
                   <SelectValue />
@@ -218,21 +222,14 @@ const SortableItem = memo(({
                 </SelectContent>
               </Select>
               <Button
-                onClick={() => {
-                  const tomorrow = new Date();
-                  tomorrow.setDate(tomorrow.getDate() + 1);
-                  setEditingDate(tomorrow);
-                }}
+                onClick={setTomorrowAndSave}
                 variant="outline"
                 className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8"
               >
                 {t('tomorrow')}
               </Button>
               <Button
-                onClick={() => {
-                  const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
-                  setEditingDate(nextMonday);
-                }}
+                onClick={setNextWeekAndSave}
                 variant="outline"
                 className="bg-white/10 border-white/20 text-xs hover:bg-white/20 h-8 w-full sm:w-auto"
               >
@@ -747,6 +744,166 @@ export default function TodoApp() {
     }
   };
 
+  // Функции для авто-сохранения при изменении даты/повторения
+  const saveWithDate = async (newDate: Date | undefined) => {
+    if (!editingText.trim() || !editingId) return;
+
+    try {
+      const validationResult = todoSchema.safeParse({
+        title: editingText.trim(),
+        notes: editingNotes.trim() || null,
+        due_date: newDate ? format(newDate, 'yyyy-MM-dd') : null,
+        recurrence_type: editingRecurrence === 'none' ? null : editingRecurrence,
+      });
+
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast({
+          title: t('error'),
+          description: firstError.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const updateData = { 
+        title: validationResult.data.title,
+        due_date: validationResult.data.due_date,
+        notes: validationResult.data.notes,
+        recurrence_type: validationResult.data.recurrence_type,
+      };
+
+      if (isOnline) {
+        const { error } = await supabase
+          .from('todos')
+          .update(updateData)
+          .eq('id', editingId);
+
+        if (error) throw error;
+      } else {
+        queueOperation({
+          id: editingId,
+          type: 'update',
+          table: 'todos',
+          data: updateData,
+        });
+      }
+
+      setTodos(todos.map(t =>
+        t.id === editingId ? { 
+          ...t, 
+          title: validationResult.data.title,
+          due_date: validationResult.data.due_date,
+          notes: validationResult.data.notes,
+          recurrence_type: validationResult.data.recurrence_type as any,
+        } : t
+      ));
+      
+      setEditingId(null);
+      setEditingText('');
+      setEditingDate(undefined);
+      setEditingNotes('');
+      setEditingRecurrence('none');
+      
+      toast({
+        title: t('success'),
+        description: isOnline ? t('task_updated') : t('offline_mode'),
+        duration: 1000,
+      });
+    } catch (error: any) {
+      toast({
+        title: t('error'),
+        description: t('failed_update_task'),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const saveWithRecurrence = async (newRecurrence: string) => {
+    if (!editingText.trim() || !editingId) return;
+
+    try {
+      const validationResult = todoSchema.safeParse({
+        title: editingText.trim(),
+        notes: editingNotes.trim() || null,
+        due_date: editingDate ? format(editingDate, 'yyyy-MM-dd') : null,
+        recurrence_type: newRecurrence === 'none' ? null : newRecurrence,
+      });
+
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast({
+          title: t('error'),
+          description: firstError.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const updateData = { 
+        title: validationResult.data.title,
+        due_date: validationResult.data.due_date,
+        notes: validationResult.data.notes,
+        recurrence_type: validationResult.data.recurrence_type,
+      };
+
+      if (isOnline) {
+        const { error } = await supabase
+          .from('todos')
+          .update(updateData)
+          .eq('id', editingId);
+
+        if (error) throw error;
+      } else {
+        queueOperation({
+          id: editingId,
+          type: 'update',
+          table: 'todos',
+          data: updateData,
+        });
+      }
+
+      setTodos(todos.map(t =>
+        t.id === editingId ? { 
+          ...t, 
+          title: validationResult.data.title,
+          due_date: validationResult.data.due_date,
+          notes: validationResult.data.notes,
+          recurrence_type: validationResult.data.recurrence_type as any,
+        } : t
+      ));
+      
+      setEditingId(null);
+      setEditingText('');
+      setEditingDate(undefined);
+      setEditingNotes('');
+      setEditingRecurrence('none');
+      
+      toast({
+        title: t('success'),
+        description: isOnline ? t('task_updated') : t('offline_mode'),
+        duration: 1000,
+      });
+    } catch (error: any) {
+      toast({
+        title: t('error'),
+        description: t('failed_update_task'),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const setTomorrowAndSave = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    saveWithDate(tomorrow);
+  };
+
+  const setNextWeekAndSave = () => {
+    const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
+    saveWithDate(nextMonday);
+  };
+
   const archiveCompletedTodos = async () => {
     const completedTodos = todos.filter(todo => todo.completed);
     
@@ -957,7 +1114,7 @@ export default function TodoApp() {
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-3">
-              {sortedTodos.map((todo, index) => (
+            {sortedTodos.map((todo, index) => (
                 <SortableItem 
                   key={todo.id} 
                   todo={todo}
@@ -970,8 +1127,8 @@ export default function TodoApp() {
                   t={t}
                   setEditingText={setEditingText}
                   setEditingNotes={setEditingNotes}
-                  setEditingDate={setEditingDate}
-                  setEditingRecurrence={setEditingRecurrence}
+                  setEditingDateAndSave={saveWithDate}
+                  setEditingRecurrenceAndSave={saveWithRecurrence}
                   toggleTodo={toggleTodo}
                   startEditing={startEditing}
                   deleteTodo={deleteTodo}
@@ -982,6 +1139,8 @@ export default function TodoApp() {
                   index={index}
                   showBadge={showBadge}
                   onMoveToTop={(todoId) => moveToTop(todoId, sortedTodos)}
+                  setTomorrowAndSave={setTomorrowAndSave}
+                  setNextWeekAndSave={setNextWeekAndSave}
                 />
               ))}
             </div>

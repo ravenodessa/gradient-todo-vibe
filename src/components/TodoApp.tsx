@@ -736,6 +736,7 @@ export default function TodoApp() {
       toast({
         title: t('success'),
         description: isOnline ? t('task_updated') : t('offline_mode'),
+        duration: 1000,
       });
     } catch (error: any) {
       toast({

@@ -927,6 +927,7 @@ export default function TodoApp() {
       toast({
         title: t('success'),
         description: t('tasks_archived').replace('{count}', completedTodos.length.toString()),
+        duration: 1000,
       });
     } catch (error: any) {
       toast({

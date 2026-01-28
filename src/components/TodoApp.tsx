@@ -513,6 +513,7 @@ export default function TodoApp() {
       toast({
         title: t('success'),
         description: isOnline ? t('task_added') : t('offline_mode'),
+        duration: 1000,
       });
     } catch (error: any) {
       toast({
@@ -643,6 +644,7 @@ export default function TodoApp() {
       toast({
         title: t('success'),
         description: isOnline ? t('task_deleted') : t('offline_mode'),
+        duration: 1000,
       });
     } catch (error: any) {
       toast({
@@ -912,6 +914,7 @@ export default function TodoApp() {
       toast({
         title: t('info'),
         description: t('no_completed_tasks'),
+        duration: 1000,
       });
       return;
     }

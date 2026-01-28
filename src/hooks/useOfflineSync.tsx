@@ -87,6 +87,7 @@ export function useOfflineSync() {
         toast({
           title: t('success'),
           description: `${t('synced')} ${successfulOps.length} ${t('changes')}`,
+          duration: 1000,
         });
       }
     } catch (error) {

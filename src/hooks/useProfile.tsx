@@ -78,6 +78,7 @@ export const useProfile = () => {
       toast({
         title: 'Успешно',
         description: 'Профиль обновлен',
+        duration: 1000,
       });
       return true;
     } catch (error: any) {

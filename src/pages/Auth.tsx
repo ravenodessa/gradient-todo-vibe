@@ -53,11 +53,13 @@ export default function Auth() {
           toast({
             title: t('success'),
             description: t('register_success'),
+            duration: 1000,
           });
         } else {
           toast({
             title: t('welcome_message'),
             description: t('login_success'),
+            duration: 1000,
           });
         }
       }

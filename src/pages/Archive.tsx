@@ -85,6 +85,7 @@ export default function Archive() {
       toast({
         title: t('success'),
         description: t('task_restored'),
+        duration: 1000,
       });
     } catch (error: any) {
       toast({
@@ -108,6 +109,7 @@ export default function Archive() {
       toast({
         title: t('success'),
         description: t('task_deleted'),
+        duration: 1000,
       });
     } catch (error: any) {
       toast({
@@ -131,6 +133,7 @@ export default function Archive() {
       toast({
         title: t('success'),
         description: t('all_archived_deleted'),
+        duration: 1000,
       });
     } catch (error: any) {
       toast({

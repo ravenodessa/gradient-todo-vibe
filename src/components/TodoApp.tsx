@@ -589,6 +589,7 @@ export default function TodoApp() {
         toast({
           title: t('success'),
           description: 'Создана следующая повторяющаяся задача',
+          duration: 1000,
         });
       } else {
         // Обычное переключение статуса

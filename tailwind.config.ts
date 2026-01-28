@@ -99,10 +99,43 @@ export default {
             height: "0",
           },
         },
+        "toast-slide-in": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(100%) scale(0.95)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0) scale(1)",
+          },
+        },
+        "toast-slide-out": {
+          "0%": {
+            opacity: "1",
+            transform: "translateX(0) scale(1)",
+          },
+          "100%": {
+            opacity: "0",
+            transform: "translateX(100%) scale(0.95)",
+          },
+        },
+        "toast-fade-in": {
+          "0%": {
+            opacity: "0",
+            transform: "scale(0.9)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "scale(1)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "toast-slide-in": "toast-slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        "toast-slide-out": "toast-slide-out 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+        "toast-fade-in": "toast-fade-in 0.25s ease-out",
       },
     },
   },

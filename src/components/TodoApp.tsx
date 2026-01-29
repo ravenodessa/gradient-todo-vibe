@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo } from 'react';
+import { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Trash2, Plus, Check, Archive, Edit2, X, CalendarIcon, Repeat, GripVertical, Keyboard } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -343,6 +344,14 @@ export default function TodoApp() {
   const { toast } = useToast();
   const { t, language } = useLanguage();
   const { isOnline, queueOperation } = useOfflineSync();
+  const isMobile = useIsMobile();
+
+  const scrollToInputAndFocus = useCallback(() => {
+    inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 300);
+  }, []);
 
   const dateLocale = language === 'ru' ? ru : enUS;
 
@@ -1327,6 +1336,17 @@ export default function TodoApp() {
           </div>
         )}
       </div>
+
+      {/* Floating Add Button for Mobile */}
+      {isMobile && (
+        <button
+          onClick={scrollToInputAndFocus}
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-primary to-secondary shadow-lg shadow-primary/30 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all duration-200 z-50"
+          aria-label={t('add_task')}
+        >
+          <Plus className="w-7 h-7" />
+        </button>
+      )}
     </div>
   );
 }

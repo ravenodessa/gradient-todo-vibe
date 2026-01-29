@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
+import { useCompletionSound } from '@/hooks/useCompletionSound';
 
 import { format, addWeeks, startOfWeek, Locale } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
@@ -345,6 +346,7 @@ export default function TodoApp() {
   const { t, language } = useLanguage();
   const { isOnline, queueOperation } = useOfflineSync();
   const isMobile = useIsMobile();
+  const { playCompletionSound } = useCompletionSound();
 
   const scrollToInputAndFocus = useCallback(() => {
     inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -596,6 +598,9 @@ export default function TodoApp() {
           t.id === id ? { ...t, completed: true } : t
         )]);
 
+        // Play completion sound for recurring task
+        playCompletionSound();
+
         toast({
           title: t('success'),
           description: 'Создана следующая повторяющаяся задача',
@@ -622,6 +627,11 @@ export default function TodoApp() {
         setTodos(todos.map(t =>
           t.id === id ? { ...t, completed: !t.completed } : t
         ));
+
+        // Play sound only when completing (not uncompleting)
+        if (!todo.completed) {
+          playCompletionSound();
+        }
       }
     } catch (error: any) {
       toast({

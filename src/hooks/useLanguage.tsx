@@ -44,6 +44,8 @@ const translations = {
     'sign_up': 'Зарегистрироваться',
     'no_account': 'Нет аккаунта? Зарегистрируйтесь',
     'have_account': 'Уже есть аккаунт? Войдите',
+    'or': 'или',
+    'continue_with_google': 'Продолжить с Google',
     
     // Profile page
     'profile': 'Профиль',
@@ -177,6 +179,8 @@ const translations = {
     'sign_up': 'Sign Up',
     'no_account': 'No account? Sign up',
     'have_account': 'Already have an account? Sign in',
+    'or': 'or',
+    'continue_with_google': 'Continue with Google',
     
     // Profile page
     'profile': 'Profile',

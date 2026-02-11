@@ -46,7 +46,7 @@ interface Todo {
   updated_at: string;
   due_date: string | null;
   notes: string | null;
-  recurrence_type: 'daily' | 'weekdays' | 'weekends' | null;
+  recurrence_type: 'daily' | 'weekdays' | 'weekends' | 'weekly' | null;
   order_index: number;
   reminder_time: string | null;
 }
@@ -221,6 +221,7 @@ const SortableItem = memo(({
                   <SelectItem value="daily">{t('recurrence_daily')}</SelectItem>
                   <SelectItem value="weekdays">{t('recurrence_weekdays')}</SelectItem>
                   <SelectItem value="weekends">{t('recurrence_weekends')}</SelectItem>
+                  <SelectItem value="weekly">{t('recurrence_weekly')}</SelectItem>
                 </SelectContent>
               </Select>
               <Button
@@ -297,6 +298,7 @@ const SortableItem = memo(({
                   {todo.recurrence_type === 'daily' && t('recurrence_daily')}
                   {todo.recurrence_type === 'weekdays' && t('recurrence_weekdays')}
                   {todo.recurrence_type === 'weekends' && t('recurrence_weekends')}
+                  {todo.recurrence_type === 'weekly' && t('recurrence_weekly')}
                  </span>
                </div>
              )}
@@ -556,6 +558,11 @@ export default function TodoApp() {
       do {
         date.setDate(date.getDate() + 1);
       } while (date.getDay() !== 0 && date.getDay() !== 6);
+      return format(date, 'yyyy-MM-dd');
+    }
+
+    if (recurrenceType === 'weekly') {
+      date.setDate(date.getDate() + 7);
       return format(date, 'yyyy-MM-dd');
     }
     
@@ -1283,6 +1290,7 @@ export default function TodoApp() {
                 <SelectItem value="daily">{t('recurrence_daily')}</SelectItem>
                 <SelectItem value="weekdays">{t('recurrence_weekdays')}</SelectItem>
                 <SelectItem value="weekends">{t('recurrence_weekends')}</SelectItem>
+                <SelectItem value="weekly">{t('recurrence_weekly')}</SelectItem>
               </SelectContent>
             </Select>
             <Button

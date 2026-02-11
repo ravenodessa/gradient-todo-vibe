@@ -89,6 +89,7 @@ const translations = {
     'recurrence_weekdays': 'По будням',
     'recurrence_weekends': 'По выходным',
     'recurrence_weekly': 'Раз в неделю',
+    'recurrence_monthly': 'Раз в месяц',
     'repeats': 'Повторяется',
     
     // Toast messages
@@ -225,6 +226,7 @@ const translations = {
     'recurrence_weekdays': 'Weekdays',
     'recurrence_weekends': 'Weekends',
     'recurrence_weekly': 'Weekly',
+    'recurrence_monthly': 'Monthly',
     'repeats': 'Repeats',
     
     // Toast messages

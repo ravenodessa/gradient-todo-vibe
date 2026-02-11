@@ -13,7 +13,7 @@ export const todoSchema = z.object({
   due_date: z.string()
     .optional()
     .nullable(),
-  recurrence_type: z.enum(['daily', 'weekdays', 'weekends', 'weekly'])
+  recurrence_type: z.enum(['daily', 'weekdays', 'weekends', 'weekly', 'monthly'])
     .optional()
     .nullable(),
 });

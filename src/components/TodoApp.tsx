@@ -46,7 +46,7 @@ interface Todo {
   updated_at: string;
   due_date: string | null;
   notes: string | null;
-  recurrence_type: 'daily' | 'weekdays' | 'weekends' | 'weekly' | null;
+  recurrence_type: 'daily' | 'weekdays' | 'weekends' | 'weekly' | 'monthly' | null;
   order_index: number;
   reminder_time: string | null;
 }
@@ -222,6 +222,7 @@ const SortableItem = memo(({
                   <SelectItem value="weekdays">{t('recurrence_weekdays')}</SelectItem>
                   <SelectItem value="weekends">{t('recurrence_weekends')}</SelectItem>
                   <SelectItem value="weekly">{t('recurrence_weekly')}</SelectItem>
+                  <SelectItem value="monthly">{t('recurrence_monthly')}</SelectItem>
                 </SelectContent>
               </Select>
               <Button
@@ -299,6 +300,7 @@ const SortableItem = memo(({
                   {todo.recurrence_type === 'weekdays' && t('recurrence_weekdays')}
                   {todo.recurrence_type === 'weekends' && t('recurrence_weekends')}
                   {todo.recurrence_type === 'weekly' && t('recurrence_weekly')}
+                  {todo.recurrence_type === 'monthly' && t('recurrence_monthly')}
                  </span>
                </div>
              )}
@@ -563,6 +565,11 @@ export default function TodoApp() {
 
     if (recurrenceType === 'weekly') {
       date.setDate(date.getDate() + 7);
+      return format(date, 'yyyy-MM-dd');
+    }
+
+    if (recurrenceType === 'monthly') {
+      date.setMonth(date.getMonth() + 1);
       return format(date, 'yyyy-MM-dd');
     }
     
@@ -1291,6 +1298,7 @@ export default function TodoApp() {
                 <SelectItem value="weekdays">{t('recurrence_weekdays')}</SelectItem>
                 <SelectItem value="weekends">{t('recurrence_weekends')}</SelectItem>
                 <SelectItem value="weekly">{t('recurrence_weekly')}</SelectItem>
+                <SelectItem value="monthly">{t('recurrence_monthly')}</SelectItem>
               </SelectContent>
             </Select>
             <Button

@@ -607,17 +607,15 @@ export default function TodoApp() {
 
         if (createError) throw createError;
 
-        // Помечаем текущую задачу как выполненную
+        // Помечаем текущую задачу как выполненную и архивируем
         const { error: updateError } = await supabase
           .from('todos')
-          .update({ completed: true })
+          .update({ completed: true, archived: true })
           .eq('id', id);
 
         if (updateError) throw updateError;
 
-        setTodos([newTodo as Todo, ...todos.map(t =>
-          t.id === id ? { ...t, completed: true } : t
-        )]);
+        setTodos([newTodo as Todo, ...todos.filter(t => t.id !== id)]);
 
         // Play completion sound for recurring task
         playCompletionSound();
@@ -629,29 +627,49 @@ export default function TodoApp() {
         });
       } else {
         // Обычное переключение статуса
-        if (isOnline) {
-          const { error } = await supabase
-            .from('todos')
-            .update({ completed: !todo.completed })
-            .eq('id', id);
+        const newCompleted = !todo.completed;
+        
+        if (newCompleted) {
+          // Completing → archive immediately
+          if (isOnline) {
+            const { error } = await supabase
+              .from('todos')
+              .update({ completed: true, archived: true })
+              .eq('id', id);
 
-          if (error) throw error;
-        } else {
-          queueOperation({
-            id,
-            type: 'update',
-            table: 'todos',
-            data: { completed: !todo.completed },
-          });
-        }
+            if (error) throw error;
+          } else {
+            queueOperation({
+              id,
+              type: 'update',
+              table: 'todos',
+              data: { completed: true, archived: true },
+            });
+          }
 
-        setTodos(todos.map(t =>
-          t.id === id ? { ...t, completed: !t.completed } : t
-        ));
-
-        // Play sound only when completing (not uncompleting)
-        if (!todo.completed) {
+          setTodos(todos.filter(t => t.id !== id));
           playCompletionSound();
+        } else {
+          // Uncompleting (shouldn't happen normally since completed tasks are archived)
+          if (isOnline) {
+            const { error } = await supabase
+              .from('todos')
+              .update({ completed: false })
+              .eq('id', id);
+
+            if (error) throw error;
+          } else {
+            queueOperation({
+              id,
+              type: 'update',
+              table: 'todos',
+              data: { completed: false },
+            });
+          }
+
+          setTodos(todos.map(t =>
+            t.id === id ? { ...t, completed: false } : t
+          ));
         }
       }
     } catch (error: any) {
@@ -1333,18 +1351,9 @@ export default function TodoApp() {
           </div>
         </div>
 
-        {/* Archive Completed Button */}
-        {todos.some(todo => todo.completed) && (
-          <div className="mb-6">
-            <Button
-              onClick={archiveCompletedTodos}
-              variant="outline"
-              className="w-full bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground"
-            >
-              <Archive className="w-4 h-4 mr-2" />
-              {t('archive_completed')} ({todos.filter(t => t.completed).length})
-            </Button>
-          </div>
+        {/* Archive button removed - tasks auto-archive on completion */}
+        {false && (
+          <div className="mb-6"></div>
         )}
 
         {/* Todo Sections */}

@@ -52,6 +52,7 @@ interface Todo {
 }
 
 interface SortableItemProps {
+  isCompleting?: boolean;
   todo: Todo;
   editingId: string | null;
   editingText: string;
@@ -79,6 +80,7 @@ interface SortableItemProps {
 }
 
 const SortableItem = memo(({ 
+  isCompleting,
   todo, 
   editingId,
   editingText,
@@ -123,7 +125,9 @@ const SortableItem = memo(({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200"
+      className={`flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 ${
+        isCompleting ? 'animate-completing' : ''
+      }`}
     >
       <div
         {...attributes}
@@ -347,6 +351,7 @@ export default function TodoApp() {
   const [editingNotes, setEditingNotes] = useState('');
   const [editingRecurrence, setEditingRecurrence] = useState<string>('none');
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
   const { user } = useAuth();
   const { toast } = useToast();
   const { t, language } = useLanguage();
@@ -590,6 +595,10 @@ export default function TodoApp() {
     try {
       // Если задача повторяющаяся и её завершают
       if (todo.recurrence_type && !todo.completed) {
+        // Start fade-out animation for recurring task
+        setCompletingIds(prev => new Set(prev).add(id));
+        playCompletionSound();
+
         // Создаем новую задачу с следующей датой
         const nextDate = getNextRecurrenceDate(todo.due_date || format(new Date(), 'yyyy-MM-dd'), todo.recurrence_type);
         
@@ -607,18 +616,30 @@ export default function TodoApp() {
 
         if (createError) throw createError;
 
-        // Помечаем текущую задачу как выполненную и архивируем
-        const { error: updateError } = await supabase
-          .from('todos')
-          .update({ completed: true, archived: true })
-          .eq('id', id);
+        // Wait for animation, then archive
+        setTimeout(async () => {
+          try {
+            const { error: updateError } = await supabase
+              .from('todos')
+              .update({ completed: true, archived: true })
+              .eq('id', id);
 
-        if (updateError) throw updateError;
+            if (updateError) throw updateError;
 
-        setTodos([newTodo as Todo, ...todos.filter(t => t.id !== id)]);
-
-        // Play completion sound for recurring task
-        playCompletionSound();
+            setTodos(prev => [newTodo as Todo, ...prev.filter(t => t.id !== id)]);
+            setCompletingIds(prev => {
+              const next = new Set(prev);
+              next.delete(id);
+              return next;
+            });
+          } catch (err: any) {
+            setCompletingIds(prev => {
+              const next = new Set(prev);
+              next.delete(id);
+              return next;
+            });
+          }
+        }, 500);
 
         toast({
           title: t('success'),
@@ -630,25 +651,48 @@ export default function TodoApp() {
         const newCompleted = !todo.completed;
         
         if (newCompleted) {
-          // Completing → archive immediately
-          if (isOnline) {
-            const { error } = await supabase
-              .from('todos')
-              .update({ completed: true, archived: true })
-              .eq('id', id);
-
-            if (error) throw error;
-          } else {
-            queueOperation({
-              id,
-              type: 'update',
-              table: 'todos',
-              data: { completed: true, archived: true },
-            });
-          }
-
-          setTodos(todos.filter(t => t.id !== id));
+          // Start fade-out animation
+          setCompletingIds(prev => new Set(prev).add(id));
           playCompletionSound();
+
+          // Wait for animation, then archive
+          setTimeout(async () => {
+            try {
+              if (isOnline) {
+                const { error } = await supabase
+                  .from('todos')
+                  .update({ completed: true, archived: true })
+                  .eq('id', id);
+
+                if (error) throw error;
+              } else {
+                queueOperation({
+                  id,
+                  type: 'update',
+                  table: 'todos',
+                  data: { completed: true, archived: true },
+                });
+              }
+
+              setTodos(prev => prev.filter(t => t.id !== id));
+              setCompletingIds(prev => {
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
+              });
+            } catch (error: any) {
+              setCompletingIds(prev => {
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
+              });
+              toast({
+                title: t('error'),
+                description: t('failed_update_task'),
+                variant: "destructive",
+              });
+            }
+          }, 500);
         } else {
           // Uncompleting (shouldn't happen normally since completed tasks are archived)
           if (isOnline) {
@@ -1180,6 +1224,7 @@ export default function TodoApp() {
             {sortedTodos.map((todo, index) => (
                 <SortableItem 
                   key={todo.id} 
+                  isCompleting={completingIds.has(todo.id)}
                   todo={todo}
                   editingId={editingId}
                   editingText={editingText}

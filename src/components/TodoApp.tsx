@@ -201,6 +201,8 @@ const SortableItem = memo(({
                     selected={editingDate}
                     onSelect={setEditingDateAndSave}
                     className="pointer-events-auto"
+                    locale={dateLocale}
+                    weekStartsOn={dateLocale === ru ? 1 : 0}
                     initialFocus
                   />
                   <div className="p-2 border-t">
@@ -1343,6 +1345,8 @@ export default function TodoApp() {
                   selected={newTodoDate}
                   onSelect={setNewTodoDate}
                   className="pointer-events-auto"
+                  locale={dateLocale}
+                  weekStartsOn={dateLocale === ru ? 1 : 0}
                   initialFocus
                 />
                 <div className="p-2 border-t">

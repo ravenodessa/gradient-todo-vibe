@@ -508,7 +508,7 @@ export default function TodoApp() {
 
         if (error) throw error;
         
-        setTodos([...todos, data as Todo]);
+        setTodos([data as Todo, ...todos]);
         setNewlyAddedId((data as Todo).id);
         setTimeout(() => setNewlyAddedId(null), 600);
       } else {
@@ -523,7 +523,7 @@ export default function TodoApp() {
           notes: null,
         } as Todo;
         
-        setTodos([...todos, tempTodo]);
+        setTodos([tempTodo, ...todos]);
         setNewlyAddedId(tempTodo.id);
         setTimeout(() => setNewlyAddedId(null), 600);
         queueOperation({

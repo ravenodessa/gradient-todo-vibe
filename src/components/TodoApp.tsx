@@ -53,6 +53,7 @@ interface Todo {
 
 interface SortableItemProps {
   isCompleting?: boolean;
+  isNewlyAdded?: boolean;
   todo: Todo;
   editingId: string | null;
   editingText: string;
@@ -81,6 +82,7 @@ interface SortableItemProps {
 
 const SortableItem = memo(({ 
   isCompleting,
+  isNewlyAdded,
   todo, 
   editingId,
   editingText,
@@ -127,7 +129,7 @@ const SortableItem = memo(({
       style={style}
       className={`flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 ${
         isCompleting ? 'animate-completing' : ''
-      }`}
+      } ${isNewlyAdded ? 'animate-new-task' : ''}`}
     >
       <div
         {...attributes}
@@ -354,6 +356,7 @@ export default function TodoApp() {
   const [editingRecurrence, setEditingRecurrence] = useState<string>('none');
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
+  const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const { t, language } = useLanguage();
@@ -506,6 +509,8 @@ export default function TodoApp() {
         if (error) throw error;
         
         setTodos([...todos, data as Todo]);
+        setNewlyAddedId((data as Todo).id);
+        setTimeout(() => setNewlyAddedId(null), 600);
       } else {
         // Offline: create temporary todo with local ID
         const tempTodo = {
@@ -519,6 +524,8 @@ export default function TodoApp() {
         } as Todo;
         
         setTodos([...todos, tempTodo]);
+        setNewlyAddedId(tempTodo.id);
+        setTimeout(() => setNewlyAddedId(null), 600);
         queueOperation({
           id: tempTodo.id,
           type: 'insert',
@@ -1227,6 +1234,7 @@ export default function TodoApp() {
                 <SortableItem 
                   key={todo.id} 
                   isCompleting={completingIds.has(todo.id)}
+                  isNewlyAdded={newlyAddedId === todo.id}
                   todo={todo}
                   editingId={editingId}
                   editingText={editingText}

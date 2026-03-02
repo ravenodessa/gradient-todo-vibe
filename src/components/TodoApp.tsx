@@ -487,8 +487,8 @@ export default function TodoApp() {
         return;
       }
 
-      const maxOrderIndex = todos.length > 0 
-        ? Math.max(...todos.map(t => t.order_index || 0))
+      const minOrderIndex = todos.length > 0 
+        ? Math.min(...todos.map(t => t.order_index || 0))
         : 0;
 
       const newTodoData = {
@@ -496,7 +496,7 @@ export default function TodoApp() {
         user_id: user.id,
         due_date: validationResult.data.due_date,
         recurrence_type: validationResult.data.recurrence_type,
-        order_index: maxOrderIndex + 1,
+        order_index: minOrderIndex - 1,
       };
 
       if (isOnline) {

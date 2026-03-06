@@ -1394,7 +1394,11 @@ export default function TodoApp() {
               onClick={() => {
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
-                setNewTodoDate(tomorrow);
+                if (newTodo.trim()) {
+                  addTodo(tomorrow);
+                } else {
+                  setNewTodoDate(tomorrow);
+                }
               }}
               variant="outline"
               className="bg-white/10 border-white/20 text-xs hover:bg-white/20"

@@ -1352,7 +1352,12 @@ export default function TodoApp() {
                 <Calendar
                   mode="single"
                   selected={newTodoDate}
-                  onSelect={setNewTodoDate}
+                  onSelect={(date) => {
+                    setNewTodoDate(date);
+                    if (date && newTodo.trim()) {
+                      setTimeout(() => addTodo(date), 0);
+                    }
+                  }}
                   className="pointer-events-auto"
                   locale={dateLocale}
                   weekStartsOn={dateLocale === ru ? 1 : 0}

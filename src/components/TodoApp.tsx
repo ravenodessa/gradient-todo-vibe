@@ -465,8 +465,9 @@ export default function TodoApp() {
     }
   };
 
-  const addTodo = async () => {
+  const addTodo = async (overrideDate?: Date) => {
     if (!newTodo.trim() || !user) return;
+    const effectiveDate = overrideDate || newTodoDate || new Date();
 
     try {
       // Validate input before sending to database

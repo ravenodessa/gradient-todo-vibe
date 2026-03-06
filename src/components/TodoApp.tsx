@@ -474,7 +474,7 @@ export default function TodoApp() {
       const validationResult = todoSchema.safeParse({
         title: newTodo.trim(),
         notes: null,
-        due_date: format(newTodoDate || new Date(), 'yyyy-MM-dd'),
+        due_date: format(effectiveDate, 'yyyy-MM-dd'),
         recurrence_type: newTodoRecurrence === 'none' ? null : newTodoRecurrence,
       });
 

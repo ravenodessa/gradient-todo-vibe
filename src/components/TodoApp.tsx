@@ -1408,7 +1408,11 @@ export default function TodoApp() {
             <Button
               onClick={() => {
                 const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
-                setNewTodoDate(nextMonday);
+                if (newTodo.trim()) {
+                  addTodo(nextMonday);
+                } else {
+                  setNewTodoDate(nextMonday);
+                }
               }}
               variant="outline"
               className="bg-white/10 border-white/20 text-xs hover:bg-white/20 w-full sm:w-auto"

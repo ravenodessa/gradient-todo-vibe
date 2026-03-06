@@ -1327,7 +1327,7 @@ export default function TodoApp() {
               className="flex-1 bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary"
             />
             <Button
-              onClick={addTodo}
+              onClick={() => addTodo()}
               className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shrink-0"
               size="icon"
             >

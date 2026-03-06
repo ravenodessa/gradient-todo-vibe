@@ -465,15 +465,16 @@ export default function TodoApp() {
     }
   };
 
-  const addTodo = async () => {
+  const addTodo = async (overrideDate?: Date) => {
     if (!newTodo.trim() || !user) return;
+    const effectiveDate = overrideDate || newTodoDate || new Date();
 
     try {
       // Validate input before sending to database
       const validationResult = todoSchema.safeParse({
         title: newTodo.trim(),
         notes: null,
-        due_date: format(newTodoDate || new Date(), 'yyyy-MM-dd'),
+        due_date: format(effectiveDate, 'yyyy-MM-dd'),
         recurrence_type: newTodoRecurrence === 'none' ? null : newTodoRecurrence,
       });
 
@@ -1326,7 +1327,7 @@ export default function TodoApp() {
               className="flex-1 bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary"
             />
             <Button
-              onClick={addTodo}
+              onClick={() => addTodo()}
               className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shrink-0"
               size="icon"
             >
@@ -1351,7 +1352,12 @@ export default function TodoApp() {
                 <Calendar
                   mode="single"
                   selected={newTodoDate}
-                  onSelect={setNewTodoDate}
+                  onSelect={(date) => {
+                    setNewTodoDate(date);
+                    if (date && newTodo.trim()) {
+                      setTimeout(() => addTodo(date), 0);
+                    }
+                  }}
                   className="pointer-events-auto"
                   locale={dateLocale}
                   weekStartsOn={dateLocale === ru ? 1 : 0}
@@ -1388,7 +1394,11 @@ export default function TodoApp() {
               onClick={() => {
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
-                setNewTodoDate(tomorrow);
+                if (newTodo.trim()) {
+                  addTodo(tomorrow);
+                } else {
+                  setNewTodoDate(tomorrow);
+                }
               }}
               variant="outline"
               className="bg-white/10 border-white/20 text-xs hover:bg-white/20"
@@ -1398,7 +1408,11 @@ export default function TodoApp() {
             <Button
               onClick={() => {
                 const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
-                setNewTodoDate(nextMonday);
+                if (newTodo.trim()) {
+                  addTodo(nextMonday);
+                } else {
+                  setNewTodoDate(nextMonday);
+                }
               }}
               variant="outline"
               className="bg-white/10 border-white/20 text-xs hover:bg-white/20 w-full sm:w-auto"

@@ -293,9 +293,11 @@ const SortableItem = memo(({
               <div className="flex items-center gap-1">
                 <CalendarIcon className="w-3 h-3 text-muted-foreground" />
                 <span className={`text-xs ${
-                  new Date(todo.due_date) < new Date() && !todo.completed
+                  new Date(todo.due_date) < new Date(new Date().toDateString()) && !todo.completed
                     ? 'text-red-400'
-                    : 'text-muted-foreground'
+                    : todo.due_date === format(new Date(), 'yyyy-MM-dd')
+                      ? 'text-success'
+                      : 'text-muted-foreground'
                 }`}>
                   {format(new Date(todo.due_date), "EEE dd MMM yyyy", { locale: dateLocale })}
                 </span>

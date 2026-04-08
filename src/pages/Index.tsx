@@ -6,7 +6,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useLanguage } from '@/hooks/useLanguage';
 import { UserAvatar } from '@/components/UserAvatar';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
-import { Settings, Languages } from 'lucide-react';
+import { Settings, Languages, Star } from 'lucide-react';
 
 const TodoApp = lazy(() => import("@/components/TodoApp"));
 export default function Index() {
@@ -63,6 +63,11 @@ export default function Index() {
             >
               <Languages className="h-4 w-4" />
             </Button>
+            <Link to="/favorites">
+              <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-yellow-400 hover:bg-yellow-400/10 hover:text-yellow-300 px-2" title={t('favorites')}>
+                <Star className="h-4 w-4 fill-yellow-400" />
+              </Button>
+            </Link>
             <Link to="/archive">
               <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground px-2">
                 📁

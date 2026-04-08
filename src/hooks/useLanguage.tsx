@@ -148,6 +148,22 @@ const translations = {
     'shortcut_save': 'Сохранить изменения (при редактировании)',
     'shortcut_cancel': 'Отменить редактирование',
     'close': 'Закрыть',
+    
+    // Favorites
+    'favorites': 'Избранное',
+    'add_favorite_placeholder': 'Добавить в избранное...',
+    'no_favorites': 'Избранных задач нет',
+    'no_favorites_description': 'Добавьте часто используемые задачи для быстрого доступа',
+    'favorite_added': 'Добавлено в избранное',
+    'favorite_updated': 'Избранная задача обновлена',
+    'favorite_deleted': 'Удалено из избранного',
+    'favorite_added_to_tasks': 'Задача добавлена из избранного',
+    'add_to_tasks': 'Добавить в задачи',
+    'total_favorites': 'Всего в избранном',
+    'failed_load_favorites': 'Не удалось загрузить избранное',
+    'failed_add_favorite': 'Не удалось добавить в избранное',
+    'failed_update_favorite': 'Не удалось обновить избранное',
+    'failed_delete_favorite': 'Не удалось удалить из избранного',
   },
   en: {
     // Common
@@ -286,6 +302,22 @@ const translations = {
     'shortcut_save': 'Save changes (when editing)',
     'shortcut_cancel': 'Cancel editing',
     'close': 'Close',
+    
+    // Favorites
+    'favorites': 'Favorites',
+    'add_favorite_placeholder': 'Add to favorites...',
+    'no_favorites': 'No favorites yet',
+    'no_favorites_description': 'Add frequently used tasks for quick access',
+    'favorite_added': 'Added to favorites',
+    'favorite_updated': 'Favorite updated',
+    'favorite_deleted': 'Removed from favorites',
+    'favorite_added_to_tasks': 'Task added from favorites',
+    'add_to_tasks': 'Add to tasks',
+    'total_favorites': 'Total favorites',
+    'failed_load_favorites': 'Failed to load favorites',
+    'failed_add_favorite': 'Failed to add to favorites',
+    'failed_update_favorite': 'Failed to update favorite',
+    'failed_delete_favorite': 'Failed to remove from favorites',
   },
 };
 

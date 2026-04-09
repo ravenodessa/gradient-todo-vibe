@@ -5,7 +5,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Trash2, Plus, Check, Archive, Edit2, X, CalendarIcon, Repeat, GripVertical, Keyboard } from 'lucide-react';
+import { Trash2, Plus, Check, Archive, Edit2, X, CalendarIcon, Repeat, GripVertical, Keyboard, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,7 +14,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import { useCompletionSound } from '@/hooks/useCompletionSound';
 
-import { format, addWeeks, startOfWeek, Locale } from 'date-fns';
+import { format, addDays, addWeeks, startOfWeek, Locale } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { todoSchema } from '@/lib/validation';
@@ -76,6 +76,7 @@ interface SortableItemProps {
   index: number;
   showBadge: boolean;
   onMoveToTop?: (todoId: string) => void;
+  moveToTomorrow: (todoId: string) => void;
   setTomorrowAndSave: () => void;
   setNextWeekAndSave: () => void;
 }
@@ -105,6 +106,7 @@ const SortableItem = memo(({
   index,
   showBadge,
   onMoveToTop,
+  moveToTomorrow,
   setTomorrowAndSave,
   setNextWeekAndSave,
 }: SortableItemProps) => {
@@ -320,14 +322,25 @@ const SortableItem = memo(({
          </div>
          
          {!todo.completed && (
-          <Button
-            onClick={() => startEditing(todo)}
-            variant="ghost"
-            size="icon"
-            className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
-          >
-            <Edit2 className="w-4 h-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              onClick={() => moveToTomorrow(todo.id)}
+              variant="ghost"
+              size="icon"
+              className="w-8 h-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+              title={t('move_to_tomorrow')}
+            >
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={() => startEditing(todo)}
+              variant="ghost"
+              size="icon"
+              className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+            >
+              <Edit2 className="w-4 h-4" />
+            </Button>
+          </div>
         )}
       </>
     )}
@@ -734,6 +747,25 @@ export default function TodoApp() {
         description: t('failed_update_task'),
         variant: "destructive",
       });
+    }
+  };
+
+  const moveToTomorrow = async (id: string) => {
+    try {
+      const tomorrow = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+      if (isOnline) {
+        const { error } = await supabase
+          .from('todos')
+          .update({ due_date: tomorrow })
+          .eq('id', id);
+        if (error) throw error;
+      } else {
+        queueOperation({ id, type: 'update', table: 'todos', data: { due_date: tomorrow } });
+      }
+      setTodos(prev => prev.map(t => t.id === id ? { ...t, due_date: tomorrow } : t));
+      toast({ title: t('success'), description: t('task_moved_tomorrow'), duration: 1000 });
+    } catch (error: any) {
+      toast({ title: t('error'), description: t('failed_update_task'), variant: "destructive" });
     }
   };
 
@@ -1260,6 +1292,7 @@ export default function TodoApp() {
                   index={index}
                   showBadge={showBadge}
                   onMoveToTop={(todoId) => moveToTop(todoId, sortedTodos)}
+                  moveToTomorrow={moveToTomorrow}
                   setTomorrowAndSave={setTomorrowAndSave}
                   setNextWeekAndSave={setNextWeekAndSave}
                 />

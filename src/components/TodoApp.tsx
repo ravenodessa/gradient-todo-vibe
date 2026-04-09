@@ -1292,6 +1292,7 @@ export default function TodoApp() {
                   index={index}
                   showBadge={showBadge}
                   onMoveToTop={(todoId) => moveToTop(todoId, sortedTodos)}
+                  moveToTomorrow={moveToTomorrow}
                   setTomorrowAndSave={setTomorrowAndSave}
                   setNextWeekAndSave={setNextWeekAndSave}
                 />

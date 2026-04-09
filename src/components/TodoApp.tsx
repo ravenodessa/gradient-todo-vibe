@@ -5,7 +5,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Trash2, Plus, Check, Archive, Edit2, X, CalendarIcon, Repeat, GripVertical, Keyboard } from 'lucide-react';
+import { Trash2, Plus, Check, Archive, Edit2, X, CalendarIcon, Repeat, GripVertical, Keyboard, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,7 +14,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import { useCompletionSound } from '@/hooks/useCompletionSound';
 
-import { format, addWeeks, startOfWeek, Locale } from 'date-fns';
+import { format, addDays, addWeeks, startOfWeek, Locale } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { todoSchema } from '@/lib/validation';

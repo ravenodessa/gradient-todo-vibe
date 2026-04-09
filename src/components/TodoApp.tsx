@@ -76,6 +76,7 @@ interface SortableItemProps {
   index: number;
   showBadge: boolean;
   onMoveToTop?: (todoId: string) => void;
+  moveToTomorrow: (todoId: string) => void;
   setTomorrowAndSave: () => void;
   setNextWeekAndSave: () => void;
 }
@@ -105,6 +106,7 @@ const SortableItem = memo(({
   index,
   showBadge,
   onMoveToTop,
+  moveToTomorrow,
   setTomorrowAndSave,
   setNextWeekAndSave,
 }: SortableItemProps) => {

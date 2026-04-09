@@ -750,6 +750,25 @@ export default function TodoApp() {
     }
   };
 
+  const moveToTomorrow = async (id: string) => {
+    try {
+      const tomorrow = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+      if (isOnline) {
+        const { error } = await supabase
+          .from('todos')
+          .update({ due_date: tomorrow })
+          .eq('id', id);
+        if (error) throw error;
+      } else {
+        queueOperation({ id, type: 'update', table: 'todos', data: { due_date: tomorrow } });
+      }
+      setTodos(prev => prev.map(t => t.id === id ? { ...t, due_date: tomorrow } : t));
+      toast({ title: t('success'), description: t('task_moved_tomorrow'), duration: 1000 });
+    } catch (error: any) {
+      toast({ title: t('error'), description: t('failed_update_task'), variant: "destructive" });
+    }
+  };
+
   const deleteTodo = async (id: string) => {
     try {
       if (isOnline) {

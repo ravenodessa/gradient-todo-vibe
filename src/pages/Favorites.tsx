@@ -114,17 +114,56 @@ export default function Favorites() {
     if (!user) return;
 
     try {
+      // Get the maximum order_index from today's todos to put new task at the bottom
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const { data: todayTodos } = await supabase
+        .from('todos')
+        .select('order_index')
+        .eq('user_id', user.id)
+        .eq('archived', false)
+        .eq('due_date', today);
+
+      const maxOrderIndex = todayTodos && todayTodos.length > 0
+        ? Math.max(...todayTodos.map((t: any) => t.order_index || 0))
+        : 0;
+
       const { error } = await supabase
         .from('todos')
         .insert([{
           title: favorite.title,
           user_id: user.id,
-          due_date: format(new Date(), 'yyyy-MM-dd'),
+          due_date: today,
           notes: favorite.notes,
           recurrence_type: favorite.recurrence_type,
+          order_index: maxOrderIndex + 1,
         }]);
 
       if (error) throw error;
+
+      // Move this favorite to the bottom of the favorites list
+      // Favorites are ordered by created_at desc, so oldest is at the bottom.
+      const oldestCreatedAt = favorites.length > 0
+        ? Math.min(...favorites.map(f => new Date(f.created_at).getTime()))
+        : Date.now();
+      const newCreatedAt = new Date(oldestCreatedAt - 1000).toISOString();
+
+      const { error: updateError } = await supabase
+        .from('favorite_tasks')
+        .update({ created_at: newCreatedAt })
+        .eq('id', favorite.id);
+
+      if (updateError) throw updateError;
+
+      // Reorder local state: move this favorite to the end
+      setFavorites(prev => {
+        const updated = prev.map(f =>
+          f.id === favorite.id ? { ...f, created_at: newCreatedAt } : f
+        );
+        const moved = updated.find(f => f.id === favorite.id)!;
+        const rest = updated.filter(f => f.id !== favorite.id);
+        return [...rest, moved];
+      });
+
       toast({ title: t('success'), description: t('favorite_added_to_tasks'), duration: 1000 });
     } catch (error: any) {
       toast({ title: t('error'), description: t('failed_add_task'), variant: 'destructive' });

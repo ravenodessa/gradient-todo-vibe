@@ -321,39 +321,49 @@ const SortableItem = memo(({
            </div>
          </div>
          
-         {!todo.completed && (
-          <div className="flex items-center gap-1">
-            <Button
-              onClick={() => moveToTomorrow(todo.id)}
-              variant="ghost"
-              size="icon"
-              className="w-8 h-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
-              title={t('move_to_tomorrow')}
-            >
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-            <Button
-              onClick={() => startEditing(todo)}
-              variant="ghost"
-              size="icon"
-              className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
-            >
-              <Edit2 className="w-4 h-4" />
-            </Button>
+          <div className="grid grid-cols-2 gap-1 flex-shrink-0">
+            {!todo.completed ? (
+              <>
+                <Button
+                  onClick={() => moveToTomorrow(todo.id)}
+                  variant="ghost"
+                  size="icon"
+                  className="w-8 h-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  title={t('move_to_tomorrow')}
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={() => startEditing(todo)}
+                  variant="ghost"
+                  size="icon"
+                  className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={() => deleteTodo(todo.id)}
+                  variant="ghost"
+                  size="icon"
+                  className="w-8 h-8 col-span-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => deleteTodo(todo.id)}
+                variant="ghost"
+                size="icon"
+                className="w-8 h-8 col-span-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
           </div>
-        )}
-      </>
-    )}
-    
-      <Button
-        onClick={() => deleteTodo(todo.id)}
-        variant="ghost"
-        size="icon"
-        className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-      >
-        <Trash2 className="w-4 h-4" />
-      </Button>
-    </div>
+       </>
+     )}
+     </div>
   );
 });
 

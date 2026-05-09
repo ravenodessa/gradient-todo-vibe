@@ -50,7 +50,7 @@ export const useProfile = () => {
         setProfile(data);
       }
     } catch (error: any) {
-      console.error('Error fetching profile:', error);
+      if (import.meta.env.DEV) console.error('Error fetching profile:', error);
       toast({
         title: 'Ошибка',
         description: 'Не удалось загрузить профиль',
@@ -82,7 +82,7 @@ export const useProfile = () => {
       });
       return true;
     } catch (error: any) {
-      console.error('Error updating profile:', error);
+      if (import.meta.env.DEV) console.error('Error updating profile:', error);
       toast({
         title: 'Ошибка',
         description: 'Не удалось обновить профиль',
@@ -112,7 +112,7 @@ export const useProfile = () => {
       await updateProfile({ avatar_url: publicUrl });
       return publicUrl;
     } catch (error: any) {
-      console.error('Error uploading avatar:', error);
+      if (import.meta.env.DEV) console.error('Error uploading avatar:', error);
       toast({
         title: 'Ошибка',
         description: 'Не удалось загрузить аватар',

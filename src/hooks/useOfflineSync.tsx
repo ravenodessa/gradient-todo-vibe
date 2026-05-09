@@ -36,7 +36,7 @@ export function useOfflineSync() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(operations));
     } catch (error) {
-      console.error('Failed to save pending operations:', error);
+      if (import.meta.env.DEV) console.error('Failed to save pending operations:', error);
     }
   };
 
@@ -75,7 +75,7 @@ export function useOfflineSync() {
           }
           successfulOps.push(op.id);
         } catch (error) {
-          console.error(`Failed to sync operation ${op.id}:`, error);
+          if (import.meta.env.DEV) console.error(`Failed to sync operation ${op.id}:`, error);
         }
       }
 
@@ -91,7 +91,7 @@ export function useOfflineSync() {
         });
       }
     } catch (error) {
-      console.error('Sync failed:', error);
+      if (import.meta.env.DEV) console.error('Sync failed:', error);
     } finally {
       isSyncingRef.current = false;
     }

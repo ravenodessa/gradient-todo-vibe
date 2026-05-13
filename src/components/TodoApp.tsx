@@ -273,9 +273,9 @@ const SortableItem = memo(({
       </div>
     ) : (
       <>
-        <div className="flex-1">
+      <div className="flex-1 min-w-0">
           <span
-            className={`block transition-all duration-200 ${
+            className={`block break-words transition-all duration-200 ${
               todo.completed
                 ? 'line-through text-muted-foreground'
                 : 'text-foreground'

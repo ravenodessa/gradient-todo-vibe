@@ -275,7 +275,8 @@ const SortableItem = memo(({
       <>
       <div className="flex-1 min-w-0">
           <span
-            className={`block break-words transition-all duration-200 ${
+            title={todo.title}
+            className={`block break-words [overflow-wrap:anywhere] line-clamp-2 sm:line-clamp-none transition-all duration-200 ${
               todo.completed
                 ? 'line-through text-muted-foreground'
                 : 'text-foreground'

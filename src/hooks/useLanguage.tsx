@@ -24,7 +24,7 @@ const translations = {
     'password': 'Пароль',
     
     // Index page
-    'your_tasks': 'Ваши задачи',
+    'your_tasks': 'Задачи',
     'user': 'Пользователь',
     'logout': 'Выйти',
     'welcome': 'Добро пожаловать в TodoApp',
@@ -180,7 +180,7 @@ const translations = {
     'password': 'Password',
     
     // Index page
-    'your_tasks': 'Your Tasks',
+    'your_tasks': 'Tasks',
     'user': 'User',
     'logout': 'Logout',
     'welcome': 'Welcome to TodoApp',

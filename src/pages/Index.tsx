@@ -64,12 +64,12 @@ export default function Index() {
               <Languages className="h-4 w-4" />
             </Button>
             <Link to="/favorites">
-              <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-yellow-400 hover:bg-yellow-400/10 hover:text-yellow-300 px-2" title={t('favorites')}>
+              <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-yellow-400 hover:bg-yellow-400/10 hover:text-yellow-300 px-2 h-8 sm:h-9" title={t('favorites')}>
                 <Star className="h-4 w-4 fill-yellow-400" />
               </Button>
             </Link>
             <Link to="/archive">
-              <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground px-2">
+              <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground px-2 h-8 sm:h-9">
                 📁
               </Button>
             </Link>
@@ -78,11 +78,11 @@ export default function Index() {
               {profile?.display_name || t('user')}
             </span>
             <Link to="/profile">
-              <Button variant="outline" size="sm" className="px-2">
+              <Button variant="outline" size="sm" className="px-2 h-8 sm:h-9">
                 <Settings className="h-4 w-4" />
               </Button>
             </Link>
-            <Button variant="outline" size="sm" onClick={signOut} className="px-2">
+            <Button variant="outline" size="sm" onClick={signOut} className="px-2 h-8 sm:h-9">
               <span className="hidden sm:inline">{t('logout')}</span>
               <span className="sm:hidden">✕</span>
             </Button>

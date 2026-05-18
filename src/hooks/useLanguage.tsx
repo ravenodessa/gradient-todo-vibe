@@ -24,7 +24,7 @@ const translations = {
     'password': 'Пароль',
     
     // Index page
-    'your_tasks': 'Ваши задачи',
+    'your_tasks': 'Задачи',
     'user': 'Пользователь',
     'logout': 'Выйти',
     'welcome': 'Добро пожаловать в TodoApp',

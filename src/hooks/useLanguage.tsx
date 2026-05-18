@@ -180,7 +180,7 @@ const translations = {
     'password': 'Password',
     
     // Index page
-    'your_tasks': 'Your Tasks',
+    'your_tasks': 'Tasks',
     'user': 'User',
     'logout': 'Logout',
     'welcome': 'Welcome to TodoApp',

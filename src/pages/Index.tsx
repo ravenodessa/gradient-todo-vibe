@@ -47,17 +47,17 @@ export default function Index() {
   }
   return <main className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-4">
       <div className="max-w-2xl mx-auto">
-        <div className="glass-effect rounded-t-2xl px-8 pt-6 pb-4 shadow-2xl border border-white/20 border-b-0">
-          <div className="flex justify-between items-center gap-3">
+        <div className="glass-effect rounded-t-2xl px-4 sm:px-8 pt-6 pb-4 shadow-2xl border border-white/20 border-b-0">
+          <div className="flex justify-between items-center gap-2 flex-wrap">
             <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               {t('your_tasks')}
             </h1>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
             <PWAInstallButton />
             <Button 
               variant="outline" 
               size="sm" 
-              className="px-2"
+              className="px-2 h-8 sm:h-9"
               onClick={() => setLanguage(language === 'ru' ? 'en' : 'ru')}
               title={language === 'ru' ? 'Switch to English' : 'Переключить на русский'}
             >

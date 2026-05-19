@@ -47,6 +47,7 @@ export default function Favorites() {
       const { data, error } = await supabase
         .from('favorite_tasks')
         .select('*')
+        .order('pinned', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;

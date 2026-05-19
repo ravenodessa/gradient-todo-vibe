@@ -287,6 +287,15 @@ export default function Favorites() {
                         {fav.title}
                       </span>
                       <Button
+                        onClick={() => togglePin(fav)}
+                        variant="ghost"
+                        size="icon"
+                        className={`w-8 h-8 ${fav.pinned ? 'text-primary hover:text-primary/80' : 'text-muted-foreground hover:text-foreground'} hover:bg-white/10`}
+                        title={fav.pinned ? t('unpin') : t('pin_to_top')}
+                      >
+                        {fav.pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+                      </Button>
+                      <Button
                         onClick={() => addToTodos(fav)}
                         variant="ghost"
                         size="icon"

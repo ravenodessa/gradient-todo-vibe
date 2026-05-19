@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Trash2, Plus, Edit2, Check, X, ArrowLeft, Star, Copy } from 'lucide-react';
+import { Trash2, Plus, Edit2, Check, X, ArrowLeft, Star, Copy, Pin, PinOff } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface FavoriteTask {
@@ -15,6 +15,7 @@ interface FavoriteTask {
   title: string;
   notes: string | null;
   recurrence_type: string | null;
+  pinned: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -46,6 +47,7 @@ export default function Favorites() {
       const { data, error } = await supabase
         .from('favorite_tasks')
         .select('*')
+        .order('pinned', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -107,6 +109,27 @@ export default function Favorites() {
       toast({ title: t('success'), description: t('favorite_deleted'), duration: 1000 });
     } catch (error: any) {
       toast({ title: t('error'), description: t('failed_delete_favorite'), variant: 'destructive' });
+    }
+  };
+
+  const togglePin = async (fav: FavoriteTask) => {
+    const newPinned = !fav.pinned;
+    try {
+      const { error } = await supabase
+        .from('favorite_tasks')
+        .update({ pinned: newPinned })
+        .eq('id', fav.id);
+      if (error) throw error;
+      setFavorites(prev => {
+        const updated = prev.map(f => f.id === fav.id ? { ...f, pinned: newPinned } : f);
+        return [...updated].sort((a, b) => {
+          if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+      });
+      toast({ title: t('success'), description: newPinned ? t('favorite_pinned') : t('favorite_unpinned'), duration: 1000 });
+    } catch (error: any) {
+      toast({ title: t('error'), description: t('failed_update_favorite'), variant: 'destructive' });
     }
   };
 
@@ -236,7 +259,7 @@ export default function Favorites() {
               {favorites.map((fav) => (
                 <div
                   key={fav.id}
-                  className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200"
+                  className={`flex items-center gap-3 p-4 rounded-lg border transition-all duration-200 ${fav.pinned ? 'bg-primary/10 border-primary/30 hover:bg-primary/15' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
                 >
                   {editingId === fav.id ? (
                     <div className="flex-1 flex items-center gap-2">
@@ -263,6 +286,15 @@ export default function Favorites() {
                       >
                         {fav.title}
                       </span>
+                      <Button
+                        onClick={() => togglePin(fav)}
+                        variant="ghost"
+                        size="icon"
+                        className={`w-8 h-8 ${fav.pinned ? 'text-primary hover:text-primary/80' : 'text-muted-foreground hover:text-foreground'} hover:bg-white/10`}
+                        title={fav.pinned ? t('unpin') : t('pin_to_top')}
+                      >
+                        {fav.pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+                      </Button>
                       <Button
                         onClick={() => addToTodos(fav)}
                         variant="ghost"

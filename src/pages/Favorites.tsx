@@ -15,6 +15,7 @@ interface FavoriteTask {
   title: string;
   notes: string | null;
   recurrence_type: string | null;
+  pinned: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -259,7 +259,7 @@ export default function Favorites() {
               {favorites.map((fav) => (
                 <div
                   key={fav.id}
-                  className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200"
+                  className={`flex items-center gap-3 p-4 rounded-lg border transition-all duration-200 ${fav.pinned ? 'bg-primary/10 border-primary/30 hover:bg-primary/15' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
                 >
                   {editingId === fav.id ? (
                     <div className="flex-1 flex items-center gap-2">

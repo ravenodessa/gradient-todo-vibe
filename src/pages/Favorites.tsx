@@ -112,6 +112,27 @@ export default function Favorites() {
     }
   };
 
+  const togglePin = async (fav: FavoriteTask) => {
+    const newPinned = !fav.pinned;
+    try {
+      const { error } = await supabase
+        .from('favorite_tasks')
+        .update({ pinned: newPinned })
+        .eq('id', fav.id);
+      if (error) throw error;
+      setFavorites(prev => {
+        const updated = prev.map(f => f.id === fav.id ? { ...f, pinned: newPinned } : f);
+        return [...updated].sort((a, b) => {
+          if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+      });
+      toast({ title: t('success'), description: newPinned ? t('favorite_pinned') : t('favorite_unpinned'), duration: 1000 });
+    } catch (error: any) {
+      toast({ title: t('error'), description: t('failed_update_favorite'), variant: 'destructive' });
+    }
+  };
+
   const addToTodos = async (favorite: FavoriteTask) => {
     if (!user) return;
 

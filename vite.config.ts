@@ -55,16 +55,10 @@ export default defineConfig(({ mode }) => ({
             }
           },
           {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'supabase-api-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 5 // 5 minutes
-              },
-              networkTimeoutSeconds: 10
-            }
+            // Never cache Supabase data/auth requests — always fetch fresh
+            // to avoid stale state (e.g. pinned favorites appearing unpinned).
+            urlPattern: /^https:\/\/.*\.supabase\.co\/(rest|auth|realtime|storage)\/.*/i,
+            handler: 'NetworkOnly',
           },
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,

@@ -85,16 +85,21 @@ export default function Favorites() {
   };
 
   const updateFavorite = async () => {
-    if (!editingTitle.trim() || !editingId) return;
+    if (!editingId) return;
+    const parsed = favoriteSchema.safeParse({ title: editingTitle.trim() });
+    if (!parsed.success) {
+      toast({ title: t('error'), description: parsed.error.errors[0].message, variant: 'destructive' });
+      return;
+    }
 
     try {
       const { error } = await supabase
         .from('favorite_tasks')
-        .update({ title: editingTitle.trim() })
+        .update({ title: parsed.data.title })
         .eq('id', editingId);
 
       if (error) throw error;
-      setFavorites(favorites.map(f => f.id === editingId ? { ...f, title: editingTitle.trim() } : f));
+      setFavorites(favorites.map(f => f.id === editingId ? { ...f, title: parsed.data.title } : f));
       setEditingId(null);
       setEditingTitle('');
       toast({ title: t('success'), description: t('favorite_updated'), duration: 1000 });

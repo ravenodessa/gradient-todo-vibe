@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Trash2, Plus, Edit2, Check, X, ArrowLeft, Star, Copy, Pin, PinOff } from 'lucide-react';
 import { format } from 'date-fns';
+import { favoriteSchema } from '@/lib/validation';
 
 interface FavoriteTask {
   id: string;

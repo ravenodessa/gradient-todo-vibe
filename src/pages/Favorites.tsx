@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Trash2, Plus, Edit2, Check, X, ArrowLeft, Star, Copy, Pin, PinOff } from 'lucide-react';
 import { format } from 'date-fns';
+import { favoriteSchema } from '@/lib/validation';
 
 interface FavoriteTask {
   id: string;
@@ -60,12 +61,17 @@ export default function Favorites() {
   };
 
   const addFavorite = async () => {
-    if (!newTitle.trim() || !user) return;
+    if (!user) return;
+    const parsed = favoriteSchema.safeParse({ title: newTitle.trim() });
+    if (!parsed.success) {
+      toast({ title: t('error'), description: parsed.error.errors[0].message, variant: 'destructive' });
+      return;
+    }
 
     try {
       const { data, error } = await supabase
         .from('favorite_tasks')
-        .insert([{ title: newTitle.trim(), user_id: user.id }])
+        .insert([{ title: parsed.data.title, user_id: user.id }])
         .select()
         .single();
 
@@ -79,16 +85,21 @@ export default function Favorites() {
   };
 
   const updateFavorite = async () => {
-    if (!editingTitle.trim() || !editingId) return;
+    if (!editingId) return;
+    const parsed = favoriteSchema.safeParse({ title: editingTitle.trim() });
+    if (!parsed.success) {
+      toast({ title: t('error'), description: parsed.error.errors[0].message, variant: 'destructive' });
+      return;
+    }
 
     try {
       const { error } = await supabase
         .from('favorite_tasks')
-        .update({ title: editingTitle.trim() })
+        .update({ title: parsed.data.title })
         .eq('id', editingId);
 
       if (error) throw error;
-      setFavorites(favorites.map(f => f.id === editingId ? { ...f, title: editingTitle.trim() } : f));
+      setFavorites(favorites.map(f => f.id === editingId ? { ...f, title: parsed.data.title } : f));
       setEditingId(null);
       setEditingTitle('');
       toast({ title: t('success'), description: t('favorite_updated'), duration: 1000 });

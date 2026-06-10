@@ -71,7 +71,7 @@ export default function Favorites() {
     try {
       const { data, error } = await supabase
         .from('favorite_tasks')
-        .insert([{ title: newTitle.trim(), user_id: user.id }])
+        .insert([{ title: parsed.data.title, user_id: user.id }])
         .select()
         .single();
 

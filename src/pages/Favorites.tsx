@@ -61,7 +61,12 @@ export default function Favorites() {
   };
 
   const addFavorite = async () => {
-    if (!newTitle.trim() || !user) return;
+    if (!user) return;
+    const parsed = favoriteSchema.safeParse({ title: newTitle.trim() });
+    if (!parsed.success) {
+      toast({ title: t('error'), description: parsed.error.errors[0].message, variant: 'destructive' });
+      return;
+    }
 
     try {
       const { data, error } = await supabase

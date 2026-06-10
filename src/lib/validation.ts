@@ -20,6 +20,16 @@ export const todoSchema = z.object({
 
 export type TodoInput = z.infer<typeof todoSchema>;
 
+// Favorite task validation schema
+export const favoriteSchema = z.object({
+  title: z.string()
+    .trim()
+    .min(1, 'Title cannot be empty')
+    .max(500, 'Title must be less than 500 characters'),
+});
+
+export type FavoriteInput = z.infer<typeof favoriteSchema>;
+
 // Profile validation schema
 export const profileSchema = z.object({
   display_name: z.string()

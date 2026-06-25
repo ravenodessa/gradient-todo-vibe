@@ -38,7 +38,7 @@ export const UserAvatar = ({
 
   return (
     <Avatar className={`${sizeClasses[size]} ${className || ''}`}>
-      <AvatarImage src={avatarUrl || undefined} alt={displayName || email || 'User'} />
+      <AvatarImage src={avatarUrl || undefined} alt={displayName ? `${displayName} avatar` : email ? `${email} avatar` : 'User avatar'} />
       <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-foreground">
         {getInitials()}
       </AvatarFallback>

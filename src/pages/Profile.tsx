@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Card, CardContent } from '@/components/ui/card';
+import { SEO } from '@/components/SEO';
 
 const ProfileSettings = lazy(() => import('@/components/ProfileSettings').then(module => ({ default: module.ProfileSettings })));
 
@@ -12,6 +13,7 @@ export default function Profile() {
   
   return (
     <main className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-4">
+      <SEO title="Профиль — Todo List" description="Настройки профиля: имя, аватар и язык интерфейса." path="/profile" />
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <Link to="/">

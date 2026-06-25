@@ -21,6 +21,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { UserAvatar } from '@/components/UserAvatar';
 import { format } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
+import { SEO } from '@/components/SEO';
 
 interface ArchivedTodo {
   id: string;
@@ -156,6 +157,7 @@ export default function Archive() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-4">
+      <SEO title="Архив задач — Todo List" description="Список завершённых и архивных задач с возможностью восстановления." path="/archive" />
       <div className="max-w-2xl mx-auto">
         <div className="glass-effect rounded-t-2xl px-8 pt-6 pb-4 shadow-2xl border border-white/20 border-b-0">
           <div className="flex justify-between items-center gap-3">

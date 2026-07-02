@@ -180,6 +180,7 @@ const translations = {
     'cancel': 'Cancel',
     'delete': 'Delete',
     'edit': 'Edit',
+    'clear': 'Clear',
     'back': 'Back',
     'email': 'Email',
     'password': 'Password',

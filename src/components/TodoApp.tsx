@@ -176,13 +176,26 @@ const SortableItem = memo(({
             value={editingNotes}
             onChange={(e) => setEditingNotes(e.target.value)}
             placeholder="Заметки (макс. 200 символов)"
-            className="h-8 bg-white/10 border-white/20 text-foreground text-xs pr-12"
+            className="h-8 bg-white/10 border-white/20 text-foreground text-xs pr-20"
           />
-          <span className={`absolute right-2 top-1/2 -translate-y-1/2 text-xs ${
-            editingNotes.length > 200 ? 'text-red-400' : 'text-muted-foreground'
-          }`}>
-            {editingNotes.length}/200
-          </span>
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            {editingNotes.length > 0 && (
+              <Button
+                onClick={() => setEditingNotes('')}
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 text-muted-foreground hover:text-foreground hover:bg-white/10 p-0 shrink-0"
+                title={t('clear')}
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            )}
+            <span className={`text-xs whitespace-nowrap ${
+              editingNotes.length > 200 ? 'text-red-400' : 'text-muted-foreground'
+            }`}>
+              {editingNotes.length}/200
+            </span>
+          </div>
         </div>
           <div className="flex flex-col gap-2">
             <div className="flex gap-2 items-center flex-wrap">

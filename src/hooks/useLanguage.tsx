@@ -19,6 +19,7 @@ const translations = {
     'cancel': 'Отмена',
     'delete': 'Удалить',
     'edit': 'Редактировать',
+    'clear': 'Очистить',
     'back': 'Назад',
     'email': 'Email',
     'password': 'Пароль',

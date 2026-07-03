@@ -133,34 +133,36 @@ const SortableItem = memo(({
         isCompleting ? 'animate-completing' : ''
       } ${isNewlyAdded ? 'animate-new-task' : ''}`}
     >
-      <div
-        {...attributes}
-        {...listeners}
-        className="cursor-grab active:cursor-grabbing touch-none"
-      >
-        <GripVertical className="w-4 h-4 text-muted-foreground" />
-      </div>
-      {showBadge && (
-        <div 
-          className="flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold shrink-0 cursor-pointer hover:bg-red-600 transition-colors select-none"
-          onDoubleClick={() => onMoveToTop?.(todo.id)}
-          title="Двойной клик - переместить в начало"
+      <div className="flex flex-col items-center justify-center gap-2 flex-shrink-0">
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing touch-none"
         >
-          {index + 1}
+          <GripVertical className="w-4 h-4 text-muted-foreground" />
         </div>
-      )}
-    <Button
-      onClick={() => toggleTodo(todo.id)}
-      variant="ghost"
-      size="icon"
-      className={`w-6 h-6 rounded-full border-2 transition-all duration-200 ${
-        todo.completed
-          ? 'bg-gradient-to-r from-primary to-secondary border-transparent text-white'
-          : 'border-muted-foreground/30 hover:border-primary'
-      }`}
-    >
-      {todo.completed && <Check className="w-3 h-3" />}
-    </Button>
+        {showBadge && (
+          <div 
+            className="flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold shrink-0 cursor-pointer hover:bg-red-600 transition-colors select-none"
+            onDoubleClick={() => onMoveToTop?.(todo.id)}
+            title="Двойной клик - переместить в начало"
+          >
+            {index + 1}
+          </div>
+        )}
+        <Button
+          onClick={() => toggleTodo(todo.id)}
+          variant="ghost"
+          size="icon"
+          className={`w-6 h-6 rounded-full border-2 transition-all duration-200 ${
+            todo.completed
+              ? 'bg-gradient-to-r from-primary to-secondary border-transparent text-white'
+              : 'border-muted-foreground/30 hover:border-primary'
+          }`}
+        >
+          {todo.completed && <Check className="w-3 h-3" />}
+        </Button>
+      </div>
     
     {editingId === todo.id ? (
       <div className="flex-1 flex flex-col gap-2">

@@ -337,7 +337,7 @@ const SortableItem = memo(({
            </div>
          </div>
          
-          <div className="grid grid-cols-2 gap-1 flex-shrink-0">
+          <div className="flex flex-col items-center justify-center gap-1 flex-shrink-0">
             {!todo.completed ? (
               <>
                 <Button
@@ -361,7 +361,7 @@ const SortableItem = memo(({
                   onClick={() => deleteTodo(todo.id)}
                   variant="ghost"
                   size="icon"
-                  className="w-8 h-8 col-span-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -371,7 +371,7 @@ const SortableItem = memo(({
                 onClick={() => deleteTodo(todo.id)}
                 variant="ghost"
                 size="icon"
-                className="w-8 h-8 col-span-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>

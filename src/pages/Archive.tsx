@@ -169,13 +169,14 @@ export default function Archive() {
                 variant="outline" 
                 size="sm" 
                 className="px-2"
+                aria-label={t('switch_language')}
                 onClick={() => setLanguage(language === 'ru' ? 'en' : 'ru')}
                 title={language === 'ru' ? 'Switch to English' : 'Переключить на русский'}
               >
                 <Languages className="h-4 w-4" />
               </Button>
               <Link to="/">
-                <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground px-2">
+                <Button variant="outline" size="sm" aria-label={t('go_home')} title={t('go_home')} className="bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground px-2">
                   <Home className="h-4 w-4" />
                 </Button>
               </Link>
@@ -184,7 +185,7 @@ export default function Archive() {
                 {profile?.display_name || t('user')}
               </span>
               <Link to="/profile">
-                <Button variant="outline" size="sm" className="px-2">
+                <Button variant="outline" size="sm" aria-label={t('open_settings')} title={t('open_settings')} className="px-2">
                   <Settings className="h-4 w-4" />
                 </Button>
               </Link>

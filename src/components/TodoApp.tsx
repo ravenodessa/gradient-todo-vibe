@@ -152,6 +152,7 @@ const SortableItem = memo(({
         )}
         <Button
           onClick={() => toggleTodo(todo.id)}
+          aria-label={todo.completed ? t('mark_incomplete') : t('mark_complete')}
           variant="ghost"
           size="icon"
           className={`w-6 h-6 rounded-full border-2 transition-all duration-200 ${
@@ -269,6 +270,8 @@ const SortableItem = memo(({
             <div className="flex gap-2 items-center">
               <Button
                 onClick={saveEditing}
+                aria-label={t('save')}
+                title={t('save')}
                 variant="ghost"
                 size="icon"
                 className="w-8 h-8 text-green-400 hover:text-green-300 hover:bg-green-400/10"
@@ -277,6 +280,8 @@ const SortableItem = memo(({
               </Button>
               <Button
                 onClick={cancelEditing}
+                aria-label={t('cancel')}
+                title={t('cancel')}
                 variant="ghost"
                 size="icon"
                 className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
@@ -342,6 +347,7 @@ const SortableItem = memo(({
               <>
                 <Button
                   onClick={() => moveToTomorrow(todo.id)}
+                  aria-label={t('move_to_tomorrow')}
                   variant="ghost"
                   size="icon"
                   className="w-8 h-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
@@ -351,6 +357,8 @@ const SortableItem = memo(({
                 </Button>
                 <Button
                   onClick={() => startEditing(todo)}
+                  aria-label={t('edit_task')}
+                  title={t('edit_task')}
                   variant="ghost"
                   size="icon"
                   className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
@@ -359,6 +367,8 @@ const SortableItem = memo(({
                 </Button>
                 <Button
                   onClick={() => deleteTodo(todo.id)}
+                  aria-label={t('delete_task')}
+                  title={t('delete_task')}
                   variant="ghost"
                   size="icon"
                   className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
@@ -369,6 +379,8 @@ const SortableItem = memo(({
             ) : (
               <Button
                 onClick={() => deleteTodo(todo.id)}
+                aria-label={t('delete_task')}
+                title={t('delete_task')}
                 variant="ghost"
                 size="icon"
                 className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
@@ -1278,7 +1290,7 @@ export default function TodoApp() {
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-lg">{emoji}</span>
-          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+          <h2 className="text-lg font-semibold text-foreground">{title}</h2>
           <span className="text-sm text-muted-foreground">({sectionTodos.length})</span>
         </div>
         <DndContext

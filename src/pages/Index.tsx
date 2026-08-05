@@ -36,7 +36,7 @@ export default function Index() {
   if (!user) {
     return <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 flex items-center justify-center p-4">
         <div className="glass-effect rounded-lg p-8 text-center">
-          <h1 className="text-2xl font-bold mb-4">{t('welcome')}</h1>
+          <h1 className="text-2xl font-bold mb-4">{t('welcome')} — {t('welcome_tagline')}</h1>
           <p className="mb-6 text-muted-foreground">{t('login_prompt')}</p>
           <Link to="/auth">
             <Button className="bg-gradient-to-r from-primary to-secondary">
@@ -71,7 +71,7 @@ export default function Index() {
               </Button>
             </Link>
             <Link to="/archive">
-              <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground px-2 h-8 sm:h-9">
+              <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground px-2 h-8 sm:h-9" aria-label={t('open_archive')} title={t('open_archive')}>
                 📁
               </Button>
             </Link>
@@ -80,7 +80,7 @@ export default function Index() {
               {profile?.display_name || t('user')}
             </span>
             <Link to="/profile">
-              <Button variant="outline" size="sm" className="px-2 h-8 sm:h-9">
+              <Button variant="outline" size="sm" aria-label={t('open_settings')} title={t('open_settings')} className="px-2 h-8 sm:h-9">
                 <Settings className="h-4 w-4" />
               </Button>
             </Link>

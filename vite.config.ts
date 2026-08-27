@@ -15,8 +15,12 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: null,
+      filename: 'sw.js',
+      devOptions: { enabled: false },
       includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
+
         name: '✨ Todo List - Красивый менеджер задач',
         short_name: 'Todo List',
         description: 'Простой и красивый Todo лист с градиентным дизайном',
@@ -39,7 +43,23 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/auth\/v1/],
         runtimeCaching: [
+          {
+            // Always try the network for page navigations so a stale app shell
+            // can never break startup after a new deploy.
+            urlPattern: ({ request }: any) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'pages-cache',
+              networkTimeoutSeconds: 5,
+            },
+          },
+
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',

@@ -15,8 +15,12 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: null,
+      filename: 'sw.js',
+      devOptions: { enabled: false },
       includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
+
         name: '✨ Todo List - Красивый менеджер задач',
         short_name: 'Todo List',
         description: 'Простой и красивый Todo лист с градиентным дизайном',

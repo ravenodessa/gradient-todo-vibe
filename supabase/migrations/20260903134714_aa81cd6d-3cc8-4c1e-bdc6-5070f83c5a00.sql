@@ -1,0 +1,2 @@
+ALTER TABLE public.todos DROP CONSTRAINT IF EXISTS todos_recurrence_type_check;
+ALTER TABLE public.todos ADD CONSTRAINT todos_recurrence_type_check CHECK (recurrence_type IS NULL OR recurrence_type = ANY (ARRAY['daily','weekdays','weekends','weekly','monthly','yearly']));

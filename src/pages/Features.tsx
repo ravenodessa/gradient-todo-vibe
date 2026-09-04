@@ -47,16 +47,73 @@ export default function Features() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'SoftwareApplication',
-            name: 'Todo List',
-            applicationCategory: 'BusinessApplication',
-            operatingSystem: 'Web',
-            description:
-              'Онлайн менеджер задач с повторяющимися задачами, избранными шаблонами, архивом и офлайн-режимом.',
-            offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-          }),
+          __html: JSON.stringify([
+            {
+              '@context': 'https://schema.org',
+              '@type': 'SoftwareApplication',
+              name: 'Todo List',
+              applicationCategory: 'BusinessApplication',
+              operatingSystem: 'Web',
+              description:
+                'Онлайн менеджер задач с повторяющимися задачами, избранными шаблонами, архивом и офлайн-режимом.',
+              offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+            },
+            {
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: [
+                {
+                  '@type': 'Question',
+                  name: 'Нужно ли платить за использование?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Нет, список задач доступен бесплатно после регистрации по email или через Google.',
+                  },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Работает ли приложение без интернета?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Да. Задачи сохраняются локально и синхронизируются с сервером при восстановлении соединения.',
+                  },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'На каких языках доступен интерфейс?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Русский и английский — язык переключается одной кнопкой в шапке.',
+                  },
+                },
+              ],
+            },
+            {
+              '@context': 'https://schema.org',
+              '@type': 'HowTo',
+              name: 'Как настроить повторяющуюся задачу',
+              description:
+                'Пошаговая настройка повторения задачи в онлайн менеджере задач Todo List.',
+              step: [
+                { '@type': 'HowToStep', name: 'Создайте задачу', text: 'Создайте задачу и укажите дату выполнения.' },
+                {
+                  '@type': 'HowToStep',
+                  name: 'Выберите правило повторения',
+                  text: 'Выберите правило повторения: ежедневно, еженедельно или ежемесячно — оно сохраняется вместе с задачей.',
+                },
+                {
+                  '@type': 'HowToStep',
+                  name: 'Отметьте выполнение',
+                  text: 'Отметьте задачу выполненной: она уйдёт в архив, а её копия автоматически появится на следующую дату по правилу повторения.',
+                },
+                {
+                  '@type': 'HowToStep',
+                  name: 'При необходимости перенесите',
+                  text: 'Кнопка «На завтра» переносит задачу на следующий день без редактирования.',
+                },
+              ],
+            },
+          ]),
         }}
       />
 

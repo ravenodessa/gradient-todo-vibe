@@ -406,7 +406,6 @@ export default function TodoApp() {
   const [editingDate, setEditingDate] = useState<Date | undefined>();
   const [editingNotes, setEditingNotes] = useState('');
   const [editingRecurrence, setEditingRecurrence] = useState<string>('none');
-  const [showShortcuts, setShowShortcuts] = useState(false);
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
   const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);
   const { user } = useAuth();

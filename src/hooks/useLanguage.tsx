@@ -293,6 +293,17 @@ const translations = {
     'welcome': 'Welcome to TodoApp',
     'login_prompt': 'Sign in to manage your tasks',
     'login_register': 'Sign In / Register',
+    'welcome_title': 'Online task manager with recurring tasks and offline mode',
+    'welcome_description': 'Todo List is a simple browser-based task list: tasks are automatically grouped into Overdue, Today, Tomorrow, and Later, and moving a task to tomorrow takes one click.',
+    'welcome_bullet_recurring': 'Recurring tasks: daily, weekly, monthly',
+    'welcome_bullet_favorites': 'Favorite templates for frequent tasks in one click',
+    'welcome_bullet_archive': 'Archive of completed tasks with restore option',
+    'welcome_bullet_pwa': 'Offline mode and install as app (PWA)',
+    'all_features': 'All features',
+    'guest_meta_title': 'Online task manager — free todo list in your browser',
+    'guest_meta_description': 'Free online task list: due-date sections, recurring tasks, favorite templates, archive, and offline mode. Works in browser and as an app (PWA).',
+    'app_meta_title': 'My tasks — Todo List',
+    'app_meta_description': 'Manage tasks by section: Overdue, Today, Tomorrow, Later. Supports recurrence, favorites, and offline mode.',
 
     // Auth page
     'login': 'Sign In',

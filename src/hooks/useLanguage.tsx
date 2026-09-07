@@ -313,6 +313,14 @@ const translations = {
     'app_meta_title': 'My tasks — Todo List',
     'app_meta_description': 'Manage tasks by section: Overdue, Today, Tomorrow, Later. Supports recurrence, favorites, and offline mode.',
 
+    // NotFound page
+    'notfound_meta_title': 'Page not found (404) — Todo List',
+    'notfound_meta_description': 'The requested page was not found. Return to the home page to open your task list, or check out the task manager features.',
+    'notfound_title': '404',
+    'notfound_description': 'Page not found',
+    'notfound_go_home': 'Go home',
+    'notfound_features': 'Features',
+
     // Auth page
     'login': 'Sign In',
     'register': 'Sign Up',

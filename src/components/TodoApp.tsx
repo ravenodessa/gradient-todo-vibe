@@ -1300,7 +1300,7 @@ export default function TodoApp() {
             items={sortedTodos.map(t => t.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-3">
+            <div className="space-y-1.5">
             {sortedTodos.map((todo, index) => (
                 <SortableItem 
                   key={todo.id} 

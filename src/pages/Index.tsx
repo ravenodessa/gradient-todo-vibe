@@ -27,8 +27,8 @@ export default function Index() {
     }
   }, [user, loading, navigate]);
   const guestSeo = <SEO
-    title="Онлайн менеджер задач — бесплатный todo list в браузере"
-    description="Бесплатный онлайн список задач: разделы по срокам, повторяющиеся задачи, избранные шаблоны, архив и офлайн-режим. Работает в браузере и как приложение (PWA)."
+    title={t('guest_meta_title')}
+    description={t('guest_meta_description')}
     path="/"
   />;
   if (loading) {
@@ -44,17 +44,16 @@ export default function Index() {
         {guestSeo}
         <div className="glass-effect rounded-2xl p-8 max-w-xl w-full text-center">
           <h1 className="text-2xl sm:text-3xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Онлайн менеджер задач с повторениями и офлайн-режимом
+            {t('welcome_title')}
           </h1>
           <p className="mb-4 text-muted-foreground">
-            Todo List — простой список задач в браузере: задачи автоматически группируются по разделам
-            Просрочено, Сегодня, Завтра и Позже, а перенос дела на завтра занимает один клик.
+            {t('welcome_description')}
           </p>
           <ul className="mb-6 text-sm text-muted-foreground space-y-2 text-left mx-auto max-w-md">
-            <li>• Повторяющиеся задачи: ежедневно, еженедельно, ежемесячно</li>
-            <li>• Избранные шаблоны частых дел в один клик</li>
-            <li>• Архив выполненного с возможностью восстановления</li>
-            <li>• Офлайн-режим и установка как приложение (PWA)</li>
+            <li>• {t('welcome_bullet_recurring')}</li>
+            <li>• {t('welcome_bullet_favorites')}</li>
+            <li>• {t('welcome_bullet_archive')}</li>
+            <li>• {t('welcome_bullet_pwa')}</li>
           </ul>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <Link to="/auth">
@@ -63,14 +62,14 @@ export default function Index() {
               </Button>
             </Link>
             <Link to="/features">
-              <Button variant="outline">Все возможности</Button>
+              <Button variant="outline">{t('all_features')}</Button>
             </Link>
           </div>
         </div>
       </main>;
   }
   return <main className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-4">
-      <SEO title="Мои задачи — Todo List" description="Управляйте задачами по разделам: Просрочено, Сегодня, Завтра, Позже. Поддержка повторений, избранного и офлайн." path="/" />
+      <SEO title={t('app_meta_title')} description={t('app_meta_description')} path="/" />
       <div className="max-w-2xl mx-auto">
         <div className="glass-effect rounded-t-2xl px-4 sm:px-8 pt-6 pb-4 shadow-2xl border border-white/20 border-b-0">
           <div className="flex justify-between items-center gap-2 flex-wrap">

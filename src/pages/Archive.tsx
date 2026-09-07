@@ -181,7 +181,7 @@ export default function Archive() {
                   <Home className="h-4 w-4" />
                 </Button>
               </Link>
-              <UserAvatar avatarUrl={profile?.avatar_url} displayName={profile?.display_name} email={user.email} size="sm" />
+              <UserAvatar avatarUrl={profile?.avatar_url} displayName={profile?.display_name} email={user?.email} size="sm" />
               <span className="hidden sm:block text-sm font-medium truncate max-w-[120px]">
                 {profile?.display_name || t('user')}
               </span>

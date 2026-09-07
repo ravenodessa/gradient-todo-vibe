@@ -1342,52 +1342,10 @@ export default function TodoApp() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="glass-effect rounded-b-2xl p-8 shadow-2xl border border-white/20 border-t-0">
-        
-        {/* Keyboard Shortcuts Button */}
-        <div className="flex justify-end mb-4">
-          <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <Keyboard className="w-4 h-4 mr-2" />
-                {t('keyboard_shortcuts')}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>{t('keyboard_shortcuts')}</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 mt-4">
-                <p className="text-sm text-muted-foreground">{t('shortcuts_description')}</p>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <span className="text-sm">{t('shortcut_new_task')}</span>
-                    <kbd className="px-2 py-1 text-xs font-semibold bg-background border border-border rounded">Ctrl+N</kbd>
-                  </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <span className="text-sm">{t('shortcut_edit_task')}</span>
-                    <kbd className="px-2 py-1 text-xs font-semibold bg-background border border-border rounded">Ctrl+E</kbd>
-                  </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <span className="text-sm">{t('shortcut_save')}</span>
-                    <kbd className="px-2 py-1 text-xs font-semibold bg-background border border-border rounded">Ctrl+S</kbd>
-                  </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <span className="text-sm">{t('shortcut_cancel')}</span>
-                    <kbd className="px-2 py-1 text-xs font-semibold bg-background border border-border rounded">Esc</kbd>
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-        
+      <div className="glass-effect rounded-b-2xl pt-3 pb-6 px-4 sm:px-6 shadow-2xl border border-white/20 border-t-0">
+
         {/* Add Todo Form */}
-        <div className="space-y-3 mb-8">
+        <div className="space-y-3">
           <div className="flex gap-3">
             <Input
               ref={inputRef}

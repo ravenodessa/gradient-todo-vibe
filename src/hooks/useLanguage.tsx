@@ -88,6 +88,14 @@ const translations = {
     'app_meta_title': 'Мои задачи — Todo List',
     'app_meta_description': 'Управляйте задачами по разделам: Просрочено, Сегодня, Завтра, Позже. Поддержка повторений, избранного и офлайн.',
 
+    // NotFound page
+    'notfound_meta_title': 'Страница не найдена (404) — Todo List',
+    'notfound_meta_description': 'Запрошенная страница не найдена. Вернитесь на главную, чтобы открыть свой список задач, или посмотрите возможности менеджера задач.',
+    'notfound_title': '404',
+    'notfound_description': 'Страница не найдена',
+    'notfound_go_home': 'На главную',
+    'notfound_features': 'Возможности',
+
     // Auth page
     'login': 'Вход',
     'register': 'Регистрация',

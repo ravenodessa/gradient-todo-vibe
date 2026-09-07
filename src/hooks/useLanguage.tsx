@@ -76,6 +76,25 @@ const translations = {
     'welcome': 'Добро пожаловать в TodoApp',
     'login_prompt': 'Войдите, чтобы управлять своими задачами',
     'login_register': 'Войти / Регистрация',
+    'welcome_title': 'Онлайн менеджер задач с повторениями и офлайн-режимом',
+    'welcome_description': 'Todo List — простой список задач в браузере: задачи автоматически группируются по разделам Просрочено, Сегодня, Завтра и Позже, а перенос дела на завтра занимает один клик.',
+    'welcome_bullet_recurring': 'Повторяющиеся задачи: ежедневно, еженедельно, ежемесячно',
+    'welcome_bullet_favorites': 'Избранные шаблоны частых дел в один клик',
+    'welcome_bullet_archive': 'Архив выполненного с возможностью восстановления',
+    'welcome_bullet_pwa': 'Офлайн-режим и установка как приложение (PWA)',
+    'all_features': 'Все возможности',
+    'guest_meta_title': 'Онлайн менеджер задач — бесплатный todo list в браузере',
+    'guest_meta_description': 'Бесплатный онлайн список задач: разделы по срокам, повторяющиеся задачи, избранные шаблоны, архив и офлайн-режим. Работает в браузере и как приложение (PWA).',
+    'app_meta_title': 'Мои задачи — Todo List',
+    'app_meta_description': 'Управляйте задачами по разделам: Просрочено, Сегодня, Завтра, Позже. Поддержка повторений, избранного и офлайн.',
+
+    // NotFound page
+    'notfound_meta_title': 'Страница не найдена (404) — Todo List',
+    'notfound_meta_description': 'Запрошенная страница не найдена. Вернитесь на главную, чтобы открыть свой список задач, или посмотрите возможности менеджера задач.',
+    'notfound_title': '404',
+    'notfound_description': 'Страница не найдена',
+    'notfound_go_home': 'На главную',
+    'notfound_features': 'Возможности',
 
     // Auth page
     'login': 'Вход',
@@ -282,6 +301,25 @@ const translations = {
     'welcome': 'Welcome to TodoApp',
     'login_prompt': 'Sign in to manage your tasks',
     'login_register': 'Sign In / Register',
+    'welcome_title': 'Online task manager with recurring tasks and offline mode',
+    'welcome_description': 'Todo List is a simple browser-based task list: tasks are automatically grouped into Overdue, Today, Tomorrow, and Later, and moving a task to tomorrow takes one click.',
+    'welcome_bullet_recurring': 'Recurring tasks: daily, weekly, monthly',
+    'welcome_bullet_favorites': 'Favorite templates for frequent tasks in one click',
+    'welcome_bullet_archive': 'Archive of completed tasks with restore option',
+    'welcome_bullet_pwa': 'Offline mode and install as app (PWA)',
+    'all_features': 'All features',
+    'guest_meta_title': 'Online task manager — free todo list in your browser',
+    'guest_meta_description': 'Free online task list: due-date sections, recurring tasks, favorite templates, archive, and offline mode. Works in browser and as an app (PWA).',
+    'app_meta_title': 'My tasks — Todo List',
+    'app_meta_description': 'Manage tasks by section: Overdue, Today, Tomorrow, Later. Supports recurrence, favorites, and offline mode.',
+
+    // NotFound page
+    'notfound_meta_title': 'Page not found (404) — Todo List',
+    'notfound_meta_description': 'The requested page was not found. Return to the home page to open your task list, or check out the task manager features.',
+    'notfound_title': '404',
+    'notfound_description': 'Page not found',
+    'notfound_go_home': 'Go home',
+    'notfound_features': 'Features',
 
     // Auth page
     'login': 'Sign In',

@@ -36,7 +36,7 @@ interface ArchivedTodo {
 export default function Archive() {
   const [archivedTodos, setArchivedTodos] = useState<ArchivedTodo[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const { profile } = useProfile();
   const { toast } = useToast();
   const { t, language, setLanguage } = useLanguage();
@@ -45,12 +45,13 @@ export default function Archive() {
   const dateLocale = language === 'ru' ? ru : enUS;
 
   useEffect(() => {
-    if (!user) {
+    if (authLoading) return;
+    if (!authLoading && !user) {
       navigate('/auth');
       return;
     }
     fetchArchivedTodos();
-  }, [user, navigate]);
+  }, [authLoading, user, navigate]);
 
   const fetchArchivedTodos = async () => {
     try {

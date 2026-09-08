@@ -447,6 +447,24 @@ export default function TodoApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  // Live cloud sync: pick up changes made on other devices instantly
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('todos-sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'todos', filter: `user_id=eq.${user.id}` },
+        () => fetchTodos()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+
 
   // Focus input on mount and after loading
   useEffect(() => {

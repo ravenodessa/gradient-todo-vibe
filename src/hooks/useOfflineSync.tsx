@@ -108,10 +108,17 @@ export function useOfflineSync() {
     previousOnlineStatus.current = isOnline;
   }, [isOnline]);
 
+  // Flush anything left over from a previous session on startup
+  useEffect(() => {
+    if (isOnline) syncPendingOperations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return {
     isOnline,
     queueOperation,
     getPendingOperations,
+    syncPendingOperations,
     hasPendingOperations: getPendingOperations().length > 0,
   };
 }

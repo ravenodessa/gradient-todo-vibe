@@ -84,6 +84,8 @@ export function useOfflineSync() {
       savePendingOperations(remainingOps);
 
       if (successfulOps.length > 0) {
+        // Let data views know they should reload from the database
+        window.dispatchEvent(new CustomEvent('offline-sync-complete'));
         toast({
           title: t('success'),
           description: `${t('synced')} ${successfulOps.length} ${t('changes')}`,

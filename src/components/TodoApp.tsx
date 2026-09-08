@@ -431,7 +431,7 @@ export default function TodoApp() {
   }, [user]);
 
   // Reload from the database after offline changes are synced,
-  // and whenever the app becomes visible again.
+  // whenever the app becomes visible again, and when the network returns.
   useEffect(() => {
     if (!user) return;
     const reload = () => fetchTodos();
@@ -439,9 +439,13 @@ export default function TodoApp() {
       if (document.visibilityState === 'visible') fetchTodos();
     };
     window.addEventListener('offline-sync-complete', reload);
+    window.addEventListener('online', reload);
+    window.addEventListener('focus', reload);
     document.addEventListener('visibilitychange', onVisible);
     return () => {
       window.removeEventListener('offline-sync-complete', reload);
+      window.removeEventListener('online', reload);
+      window.removeEventListener('focus', reload);
       document.removeEventListener('visibilitychange', onVisible);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -450,19 +454,41 @@ export default function TodoApp() {
   // Live cloud sync: pick up changes made on other devices instantly
   useEffect(() => {
     if (!user) return;
-    const channel = supabase
-      .channel('todos-sync')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'todos', filter: `user_id=eq.${user.id}` },
-        () => fetchTodos()
-      )
-      .subscribe();
+
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    const start = async () => {
+      // Realtime needs the current access token to pass RLS checks
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.access_token) {
+        supabase.realtime.setAuth(data.session.access_token);
+      }
+      channel = supabase
+        .channel(`todos-sync-${user.id}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'todos', filter: `user_id=eq.${user.id}` },
+          () => fetchTodos()
+        )
+        .subscribe();
+    };
+
+    start();
+
+    // Fallback polling in case the realtime socket is blocked (mobile networks, PWA)
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === 'visible' && navigator.onLine) {
+        fetchTodos();
+      }
+    }, 20000);
+
     return () => {
-      supabase.removeChannel(channel);
+      window.clearInterval(interval);
+      if (channel) supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
 
 
 

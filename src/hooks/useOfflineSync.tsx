@@ -84,6 +84,8 @@ export function useOfflineSync() {
       savePendingOperations(remainingOps);
 
       if (successfulOps.length > 0) {
+        // Let data views know they should reload from the database
+        window.dispatchEvent(new CustomEvent('offline-sync-complete'));
         toast({
           title: t('success'),
           description: `${t('synced')} ${successfulOps.length} ${t('changes')}`,
@@ -106,10 +108,17 @@ export function useOfflineSync() {
     previousOnlineStatus.current = isOnline;
   }, [isOnline]);
 
+  // Flush anything left over from a previous session on startup
+  useEffect(() => {
+    if (isOnline) syncPendingOperations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return {
     isOnline,
     queueOperation,
     getPendingOperations,
+    syncPendingOperations,
     hasPendingOperations: getPendingOperations().length > 0,
   };
 }

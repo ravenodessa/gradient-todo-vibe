@@ -430,6 +430,23 @@ export default function TodoApp() {
     }
   }, [user]);
 
+  // Reload from the database after offline changes are synced,
+  // and whenever the app becomes visible again.
+  useEffect(() => {
+    if (!user) return;
+    const reload = () => fetchTodos();
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') fetchTodos();
+    };
+    window.addEventListener('offline-sync-complete', reload);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener('offline-sync-complete', reload);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
 
   // Focus input on mount and after loading
   useEffect(() => {

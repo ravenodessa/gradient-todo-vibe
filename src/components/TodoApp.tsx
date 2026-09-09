@@ -144,7 +144,7 @@ const SortableItem = memo(({
           <div 
             className="flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold shrink-0 cursor-pointer hover:bg-red-600 transition-colors select-none"
             onDoubleClick={() => onMoveToTop?.(todo.id)}
-            title="Двойной клик - переместить в начало"
+            title={t('double_click_to_top')}
           >
             {index + 1}
           </div>
@@ -177,7 +177,7 @@ const SortableItem = memo(({
           <Input
             value={editingNotes}
             onChange={(e) => setEditingNotes(e.target.value)}
-            placeholder="Заметки (макс. 200 символов)"
+            placeholder={t('notes_placeholder')}
             className="h-8 bg-white/10 border-white/20 text-foreground text-xs pr-20"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -777,7 +777,7 @@ export default function TodoApp() {
 
         toast({
           title: t('success'),
-          description: 'Создана следующая повторяющаяся задача',
+          description: t('recurring_created'),
           duration: 1000,
         });
       } else {
@@ -1276,7 +1276,7 @@ export default function TodoApp() {
     } catch (error: any) {
       toast({
         title: t('error'),
-        description: 'Не удалось сохранить порядок задач',
+        description: t('failed_save_order'),
         variant: "destructive",
       });
       // Revert on error
@@ -1315,7 +1315,7 @@ export default function TodoApp() {
     } catch (error: any) {
       toast({
         title: t('error'),
-        description: 'Не удалось сохранить порядок задач',
+        description: t('failed_save_order'),
         variant: "destructive",
       });
       // Revert on error

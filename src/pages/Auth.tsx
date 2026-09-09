@@ -77,7 +77,7 @@ export default function Auth() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 flex items-center justify-center p-4">
-      <SEO title={isLogin ? 'Вход — Todo List' : 'Регистрация — Todo List'} description={isLogin ? 'Войдите в аккаунт, чтобы управлять вашими задачами.' : 'Создайте аккаунт, чтобы начать работу с менеджером задач.'} path="/auth" />
+      <SEO title={isLogin ? t('seo_auth_login_title') : t('seo_auth_register_title')} description={isLogin ? t('seo_auth_login_desc') : t('seo_auth_register_desc')} path="/auth" />
       <h1 className="sr-only">{isLogin ? t('login') : t('register')}</h1>
       <Card className="w-full max-w-md glass-effect border-white/20">
         <CardHeader className="text-center">

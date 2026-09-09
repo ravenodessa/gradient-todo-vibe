@@ -128,7 +128,7 @@ const SortableItem = memo(({
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-3 px-4 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 ${
+      className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 ${
         isCompleting ? 'animate-completing' : ''
       } ${isNewlyAdded ? 'animate-new-task' : ''}`}
     >

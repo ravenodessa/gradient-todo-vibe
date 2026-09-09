@@ -128,7 +128,7 @@ const SortableItem = memo(({
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-3 px-4 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 ${
+      className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 ${
         isCompleting ? 'animate-completing' : ''
       } ${isNewlyAdded ? 'animate-new-task' : ''}`}
     >
@@ -283,7 +283,7 @@ const SortableItem = memo(({
                 title={t('cancel')}
                 variant="ghost"
                 size="icon"
-                className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+                className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -295,7 +295,7 @@ const SortableItem = memo(({
       <div className="flex-1 min-w-0">
           <span
             title={todo.title}
-            className={`block break-words [overflow-wrap:anywhere] line-clamp-2 sm:line-clamp-none transition-all duration-200 ${
+            className={`block break-words [overflow-wrap:anywhere] text-sm sm:text-base leading-snug transition-all duration-200 ${
               todo.completed
                 ? 'line-through text-muted-foreground'
                 : 'text-foreground'
@@ -349,7 +349,7 @@ const SortableItem = memo(({
                   aria-label={t('move_to_tomorrow')}
                   variant="ghost"
                   size="icon"
-                  className="w-8 h-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
                   title={t('move_to_tomorrow')}
                 >
                   <ArrowRight className="w-4 h-4" />
@@ -360,7 +360,7 @@ const SortableItem = memo(({
                   title={t('edit_task')}
                   variant="ghost"
                   size="icon"
-                  className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+                  className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
                 >
                   <Edit2 className="w-4 h-4" />
                 </Button>
@@ -370,7 +370,7 @@ const SortableItem = memo(({
                   title={t('delete_task')}
                   variant="ghost"
                   size="icon"
-                  className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -382,7 +382,7 @@ const SortableItem = memo(({
                 title={t('delete_task')}
                 variant="ghost"
                 size="icon"
-                className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>

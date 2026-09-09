@@ -226,7 +226,7 @@ export default function Favorites() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-4">
-      <SEO title="Избранные задачи — Todo List" description="Часто используемые задачи и шаблоны для быстрого добавления." path="/favorites" />
+      <SEO title={t('seo_favorites_title')} description={t('seo_favorites_desc')} path="/favorites" />
       <div className="max-w-2xl mx-auto">
         <div className="glass-effect rounded-2xl p-8 shadow-2xl border border-white/20">
           {/* Header */}

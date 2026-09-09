@@ -13,7 +13,7 @@ export default function Profile() {
   
   return (
     <main className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-4">
-      <SEO title="Профиль — Todo List" description="Настройки профиля в Todo List: измените имя, загрузите аватар и выберите язык интерфейса (русский или английский)." path="/profile" />
+      <SEO title={t('seo_profile_title')} description={t('seo_profile_desc')} path="/profile" />
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <Link to="/">

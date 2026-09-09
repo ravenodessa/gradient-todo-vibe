@@ -66,13 +66,17 @@ export function useOfflineSync() {
 
       for (const op of sortedOps) {
         try {
+          let result: any = null;
           if (op.type === 'insert') {
-            await (supabase.from as any)(op.table).insert([op.data]);
+            result = await (supabase.from as any)(op.table).insert([op.data]);
           } else if (op.type === 'update') {
-            await (supabase.from as any)(op.table).update(op.data).eq('id', op.id);
+            result = await (supabase.from as any)(op.table).update(op.data).eq('id', op.id);
           } else if (op.type === 'delete') {
-            await (supabase.from as any)(op.table).delete().eq('id', op.id);
+            result = await (supabase.from as any)(op.table).delete().eq('id', op.id);
           }
+          // supabase-js resolves with { error } instead of throwing:
+          // keep the operation queued when the server rejected it.
+          if (result?.error) throw result.error;
           successfulOps.push(op.id);
         } catch (error) {
           if (import.meta.env.DEV) console.error(`Failed to sync operation ${op.id}:`, error);

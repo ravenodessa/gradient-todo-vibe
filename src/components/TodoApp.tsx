@@ -434,17 +434,29 @@ export default function TodoApp() {
   // whenever the app becomes visible again, and when the network returns.
   useEffect(() => {
     if (!user) return;
-    const reload = () => fetchTodos();
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') fetchTodos();
+    // Never reload while offline (avoids error toasts) and never while
+    // offline changes are still queued (avoids wiping optimistic rows).
+    const canReload = () => {
+      if (!navigator.onLine) return false;
+      try {
+        const queued = JSON.parse(localStorage.getItem('offline_pending_operations') || '[]');
+        return !Array.isArray(queued) || queued.length === 0;
+      } catch {
+        return true;
+      }
     };
-    window.addEventListener('offline-sync-complete', reload);
-    window.addEventListener('online', reload);
+    const syncedReload = () => fetchTodos();
+    const reload = () => {
+      if (canReload()) fetchTodos();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') reload();
+    };
+    window.addEventListener('offline-sync-complete', syncedReload);
     window.addEventListener('focus', reload);
     document.addEventListener('visibilitychange', onVisible);
     return () => {
-      window.removeEventListener('offline-sync-complete', reload);
-      window.removeEventListener('online', reload);
+      window.removeEventListener('offline-sync-complete', syncedReload);
       window.removeEventListener('focus', reload);
       document.removeEventListener('visibilitychange', onVisible);
     };

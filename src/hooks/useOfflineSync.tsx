@@ -137,6 +137,23 @@ export function useOfflineSync() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Retry the queue whenever the app is used again, so it always drains
+  useEffect(() => {
+    const retry = () => {
+      if (navigator.onLine) syncPendingOperations();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') retry();
+    };
+    window.addEventListener('focus', retry);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener('focus', retry);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return {
     isOnline,
     queueOperation,

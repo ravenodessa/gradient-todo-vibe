@@ -17,6 +17,7 @@ import { format, addDays, addWeeks, startOfWeek, Locale } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { todoSchema } from '@/lib/validation';
+import { getServerErrorMessage } from '@/lib/errorMessage';
 import {
   DndContext,
   closestCenter,
@@ -674,10 +675,10 @@ export default function TodoApp() {
         description: isOnline ? t('task_added') : t('offline_mode'),
         duration: 1000,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: t('error'),
-        description: t('failed_add_task'),
+        description: getServerErrorMessage(error, t('failed_add_task')),
         variant: "destructive",
       });
     }
@@ -817,7 +818,7 @@ export default function TodoApp() {
                 next.delete(id);
                 return next;
               });
-            } catch (error: any) {
+            } catch (error: unknown) {
               setCompletingIds(prev => {
                 const next = new Set(prev);
                 next.delete(id);
@@ -825,7 +826,7 @@ export default function TodoApp() {
               });
               toast({
                 title: t('error'),
-                description: t('failed_update_task'),
+                description: getServerErrorMessage(error, t('failed_update_task')),
                 variant: "destructive",
               });
             }
@@ -853,10 +854,10 @@ export default function TodoApp() {
           ));
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: t('error'),
-        description: t('failed_update_task'),
+        description: getServerErrorMessage(error, t('failed_update_task')),
         variant: "destructive",
       });
     }
@@ -876,8 +877,8 @@ export default function TodoApp() {
       }
       setTodos(prev => prev.map(t => t.id === id ? { ...t, due_date: tomorrow } : t));
       toast({ title: t('success'), description: t('task_moved_tomorrow'), duration: 1000 });
-    } catch (error: any) {
-      toast({ title: t('error'), description: t('failed_update_task'), variant: "destructive" });
+    } catch (error: unknown) {
+      toast({ title: t('error'), description: getServerErrorMessage(error, t('failed_update_task')), variant: "destructive" });
     }
   };
 
@@ -904,10 +905,10 @@ export default function TodoApp() {
         description: isOnline ? t('task_deleted') : t('offline_mode'),
         duration: 1000,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: t('error'),
-        description: t('failed_delete_task'),
+        description: getServerErrorMessage(error, t('failed_delete_task')),
         variant: "destructive",
       });
     }
@@ -996,10 +997,10 @@ export default function TodoApp() {
         description: isOnline ? t('task_updated') : t('offline_mode'),
         duration: 1000,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: t('error'),
-        description: t('failed_update_task'),
+        description: getServerErrorMessage(error, t('failed_update_task')),
         variant: "destructive",
       });
     }
@@ -1071,10 +1072,10 @@ export default function TodoApp() {
         description: isOnline ? t('task_updated') : t('offline_mode'),
         duration: 1000,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: t('error'),
-        description: t('failed_update_task'),
+        description: getServerErrorMessage(error, t('failed_update_task')),
         variant: "destructive",
       });
     }
@@ -1145,10 +1146,10 @@ export default function TodoApp() {
         description: isOnline ? t('task_updated') : t('offline_mode'),
         duration: 1000,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: t('error'),
-        description: t('failed_update_task'),
+        description: getServerErrorMessage(error, t('failed_update_task')),
         variant: "destructive",
       });
     }

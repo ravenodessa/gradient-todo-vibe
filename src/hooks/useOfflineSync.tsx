@@ -3,6 +3,7 @@ import { useOnlineStatus } from './useOnlineStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from './useLanguage';
+import { getServerErrorMessage } from '@/lib/errorMessage';
 
 interface PendingOperation {
   id: string;
@@ -87,6 +88,11 @@ export function useOfflineSync() {
           if (import.meta.env.DEV) console.error(`Failed to sync operation ${op.id}:`, error);
           const attempts = (op.attempts ?? 0) + 1;
           attemptsById.set(op.id, attempts);
+          toast({
+            title: t('error'),
+            description: getServerErrorMessage(error, t('failed_sync_task')),
+            variant: 'destructive',
+          });
           // Give up on changes the server keeps rejecting so the queue can drain
           // and cloud refreshes are not blocked forever.
           if (attempts >= MAX_ATTEMPTS && navigator.onLine) {
@@ -117,6 +123,11 @@ export function useOfflineSync() {
       }
     } catch (error) {
       if (import.meta.env.DEV) console.error('Sync failed:', error);
+      toast({
+        title: t('error'),
+        description: getServerErrorMessage(error, t('failed_sync_task')),
+        variant: 'destructive',
+      });
     } finally {
       isSyncingRef.current = false;
     }

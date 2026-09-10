@@ -440,7 +440,10 @@ export default function TodoApp() {
       if (!navigator.onLine) return false;
       try {
         const queued = JSON.parse(localStorage.getItem('offline_pending_operations') || '[]');
-        return !Array.isArray(queued) || queued.length === 0;
+        if (!Array.isArray(queued) || queued.length === 0) return true;
+        // Don't stay stale forever: if every queued change has already failed
+        // at least once, refresh anyway so other devices' changes show up.
+        return queued.every((op: any) => (op?.attempts ?? 0) > 0);
       } catch {
         return true;
       }

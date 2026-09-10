@@ -10,9 +10,12 @@ interface PendingOperation {
   table: string;
   data?: any;
   timestamp: number;
+  attempts?: number;
 }
 
 const STORAGE_KEY = 'offline_pending_operations';
+// A change that keeps being rejected must not block cloud refreshes forever.
+const MAX_ATTEMPTS = 5;
 
 export function useOfflineSync() {
   const isOnline = useOnlineStatus();

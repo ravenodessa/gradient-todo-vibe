@@ -66,6 +66,8 @@ export function useOfflineSync() {
       // Sort by timestamp to maintain order
       const sortedOps = operations.sort((a, b) => a.timestamp - b.timestamp);
       const successfulOps: string[] = [];
+      const droppedOps: string[] = [];
+      const attemptsById = new Map<string, number>();
 
       for (const op of sortedOps) {
         try {
@@ -83,16 +85,30 @@ export function useOfflineSync() {
           successfulOps.push(op.id);
         } catch (error) {
           if (import.meta.env.DEV) console.error(`Failed to sync operation ${op.id}:`, error);
+          const attempts = (op.attempts ?? 0) + 1;
+          attemptsById.set(op.id, attempts);
+          // Give up on changes the server keeps rejecting so the queue can drain
+          // and cloud refreshes are not blocked forever.
+          if (attempts >= MAX_ATTEMPTS && navigator.onLine) {
+            droppedOps.push(op.id);
+          }
         }
       }
 
-      // Remove successfully synced operations
-      const remainingOps = operations.filter(op => !successfulOps.includes(op.id));
+      // Remove synced and permanently failing operations, bump retry counters
+      const remainingOps = operations
+        .filter(op => !successfulOps.includes(op.id) && !droppedOps.includes(op.id))
+        .map(op =>
+          attemptsById.has(op.id) ? { ...op, attempts: attemptsById.get(op.id) } : op
+        );
       savePendingOperations(remainingOps);
 
-      if (successfulOps.length > 0) {
+      if (successfulOps.length > 0 || droppedOps.length > 0) {
         // Let data views know they should reload from the database
         window.dispatchEvent(new CustomEvent('offline-sync-complete'));
+      }
+
+      if (successfulOps.length > 0) {
         toast({
           title: t('success'),
           description: `${t('synced')} ${successfulOps.length} ${t('changes')}`,

@@ -3,6 +3,7 @@ import { useOnlineStatus } from './useOnlineStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from './useLanguage';
+import { getServerErrorMessage } from '@/lib/errorMessage';
 
 interface PendingOperation {
   id: string;
@@ -68,6 +69,7 @@ export function useOfflineSync() {
       const successfulOps: string[] = [];
       const droppedOps: string[] = [];
       const attemptsById = new Map<string, number>();
+      let firstSyncError: unknown;
 
       for (const op of sortedOps) {
         try {
@@ -85,6 +87,7 @@ export function useOfflineSync() {
           successfulOps.push(op.id);
         } catch (error) {
           if (import.meta.env.DEV) console.error(`Failed to sync operation ${op.id}:`, error);
+          firstSyncError ??= error;
           const attempts = (op.attempts ?? 0) + 1;
           attemptsById.set(op.id, attempts);
           // Give up on changes the server keeps rejecting so the queue can drain
@@ -103,6 +106,14 @@ export function useOfflineSync() {
         );
       savePendingOperations(remainingOps);
 
+      if (firstSyncError) {
+        toast({
+          title: t('error'),
+          description: getServerErrorMessage(firstSyncError, t('failed_sync_task')),
+          variant: 'destructive',
+        });
+      }
+
       if (successfulOps.length > 0 || droppedOps.length > 0) {
         // Let data views know they should reload from the database
         window.dispatchEvent(new CustomEvent('offline-sync-complete'));
@@ -117,6 +128,11 @@ export function useOfflineSync() {
       }
     } catch (error) {
       if (import.meta.env.DEV) console.error('Sync failed:', error);
+      toast({
+        title: t('error'),
+        description: getServerErrorMessage(error, t('failed_sync_task')),
+        variant: 'destructive',
+      });
     } finally {
       isSyncingRef.current = false;
     }

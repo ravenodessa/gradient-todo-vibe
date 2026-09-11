@@ -12,11 +12,14 @@ interface PendingOperation {
   data?: any;
   timestamp: number;
   attempts?: number;
+  stalled?: boolean;
 }
 
 const STORAGE_KEY = 'offline_pending_operations';
-// A change that keeps being rejected must not block cloud refreshes forever.
+// After this many failures a change is marked as stalled: it stays in the queue
+// (never discarded) but no longer blocks cloud refreshes.
 const MAX_ATTEMPTS = 5;
+
 
 export function useOfflineSync() {
   const isOnline = useOnlineStatus();

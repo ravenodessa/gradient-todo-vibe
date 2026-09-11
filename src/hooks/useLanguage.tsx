@@ -181,6 +181,8 @@ const translations = {
     'failed_update_task': 'Не удалось обновить задачу',
     'failed_delete_task': 'Не удалось удалить задачу',
     'failed_sync_task': 'Не удалось сохранить задачу на сервере',
+    'unsynced_changes_kept': 'Изменения пока не сохранены на сервере и остались в очереди',
+
     'failed_archive_tasks': 'Не удалось архивировать задачи',
     'failed_load_archived': 'Не удалось загрузить архивированные задачи',
     'failed_restore_task': 'Не удалось восстановить задачу',
@@ -421,6 +423,8 @@ const translations = {
     'failed_update_task': 'Failed to update task',
     'failed_delete_task': 'Failed to delete task',
     'failed_sync_task': 'Failed to save task on the server',
+    'unsynced_changes_kept': 'Changes are not saved on the server yet and stay queued',
+
     'failed_archive_tasks': 'Failed to archive tasks',
     'failed_load_archived': 'Failed to load archived tasks',
     'failed_restore_task': 'Failed to restore task',

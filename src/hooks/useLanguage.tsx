@@ -423,6 +423,8 @@ const translations = {
     'failed_update_task': 'Failed to update task',
     'failed_delete_task': 'Failed to delete task',
     'failed_sync_task': 'Failed to save task on the server',
+    'unsynced_changes_kept': 'Changes are not saved on the server yet and stay queued',
+
     'failed_archive_tasks': 'Failed to archive tasks',
     'failed_load_archived': 'Failed to load archived tasks',
     'failed_restore_task': 'Failed to restore task',

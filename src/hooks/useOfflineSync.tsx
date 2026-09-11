@@ -70,7 +70,7 @@ export function useOfflineSync() {
       // Sort by timestamp to maintain order
       const sortedOps = operations.sort((a, b) => a.timestamp - b.timestamp);
       const successfulOps: string[] = [];
-      const droppedOps: string[] = [];
+      const stalledOps: string[] = [];
       const attemptsById = new Map<string, number>();
       let firstSyncError: unknown;
 
@@ -93,19 +93,21 @@ export function useOfflineSync() {
           firstSyncError ??= error;
           const attempts = (op.attempts ?? 0) + 1;
           attemptsById.set(op.id, attempts);
-          // Give up on changes the server keeps rejecting so the queue can drain
-          // and cloud refreshes are not blocked forever.
+          // Never discard the user's change: after many failures just mark it as
+          // stalled so cloud refreshes are no longer blocked by it.
           if (attempts >= MAX_ATTEMPTS && navigator.onLine) {
-            droppedOps.push(op.id);
+            stalledOps.push(op.id);
           }
         }
       }
 
-      // Remove synced and permanently failing operations, bump retry counters
+      // Remove synced operations, bump retry counters, flag stalled ones
       const remainingOps = operations
-        .filter(op => !successfulOps.includes(op.id) && !droppedOps.includes(op.id))
+        .filter(op => !successfulOps.includes(op.id))
         .map(op =>
-          attemptsById.has(op.id) ? { ...op, attempts: attemptsById.get(op.id) } : op
+          attemptsById.has(op.id)
+            ? { ...op, attempts: attemptsById.get(op.id), stalled: stalledOps.includes(op.id) || op.stalled }
+            : op
         );
       savePendingOperations(remainingOps);
 
@@ -117,10 +119,19 @@ export function useOfflineSync() {
         });
       }
 
-      if (successfulOps.length > 0 || droppedOps.length > 0) {
+      if (stalledOps.length > 0) {
+        toast({
+          title: t('error'),
+          description: `${t('unsynced_changes_kept')} (${stalledOps.length})`,
+          variant: 'destructive',
+        });
+      }
+
+      if (successfulOps.length > 0) {
         // Let data views know they should reload from the database
         window.dispatchEvent(new CustomEvent('offline-sync-complete'));
       }
+
 
       if (successfulOps.length > 0) {
         toast({

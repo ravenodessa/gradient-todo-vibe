@@ -26,6 +26,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        // Keep the live-sync socket authorized after login and token refresh,
+        // so cloud updates keep flowing on every device.
+        if (session?.access_token) {
+          try {
+            supabase.realtime.setAuth(session.access_token);
+          } catch {
+            // ignore: realtime will re-auth on next subscribe
+          }
+        }
       }
     );
 
@@ -34,6 +43,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      if (session?.access_token) {
+        try {
+          supabase.realtime.setAuth(session.access_token);
+        } catch {
+          // ignore
+        }
+      }
     });
 
     return () => subscription.unsubscribe();

@@ -81,6 +81,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/`,
+        queryParams: {
+          // Long-lived session + explicit account picker for shared devices
+          access_type: 'offline',
+          prompt: 'select_account',
+        },
       },
     });
     return { error };

@@ -51,6 +51,65 @@ interface Todo {
   reminder_time: string | null;
 }
 
+interface PendingTodoOperation {
+  id: string;
+  type: 'insert' | 'update' | 'delete';
+  data?: Partial<Todo>;
+}
+
+const getPendingTodoOperations = (): PendingTodoOperation[] => {
+  try {
+    const parsed: unknown = JSON.parse(localStorage.getItem('offline_pending_operations') || '[]');
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((operation): operation is PendingTodoOperation => {
+      if (!operation || typeof operation !== 'object') return false;
+      const candidate = operation as Partial<PendingTodoOperation>;
+      return typeof candidate.id === 'string'
+        && (candidate.type === 'insert' || candidate.type === 'update' || candidate.type === 'delete');
+    });
+  } catch {
+    return [];
+  }
+};
+
+const mergePendingChanges = (cloudTodos: Todo[], currentTodos: Todo[]): Todo[] => {
+  const merged = new Map(cloudTodos.map(todo => [todo.id, todo]));
+  const current = new Map(currentTodos.map(todo => [todo.id, todo]));
+
+  for (const operation of getPendingTodoOperations()) {
+    if (operation.type === 'delete') {
+      merged.delete(operation.id);
+      continue;
+    }
+
+    const existing = merged.get(operation.id) ?? current.get(operation.id);
+    if (existing) {
+      merged.set(operation.id, { ...existing, ...operation.data });
+      continue;
+    }
+
+    if (operation.type === 'insert' && operation.data?.title) {
+      const now = new Date().toISOString();
+      merged.set(operation.id, {
+        id: operation.id,
+        title: operation.data.title,
+        completed: operation.data.completed ?? false,
+        archived: operation.data.archived ?? false,
+        user_id: operation.data.user_id ?? '',
+        created_at: operation.data.created_at ?? now,
+        updated_at: operation.data.updated_at ?? now,
+        due_date: operation.data.due_date ?? null,
+        notes: operation.data.notes ?? null,
+        recurrence_type: operation.data.recurrence_type ?? null,
+        order_index: operation.data.order_index ?? 0,
+        reminder_time: operation.data.reminder_time ?? null,
+      });
+    }
+  }
+
+  return Array.from(merged.values());
+};
+
 interface SortableItemProps {
   isCompleting?: boolean;
   isNewlyAdded?: boolean;
@@ -435,21 +494,10 @@ export default function TodoApp() {
   // whenever the app becomes visible again, and when the network returns.
   useEffect(() => {
     if (!user) return;
-    // Never reload while offline (avoids error toasts) and never while
-    // offline changes are still queued (avoids wiping optimistic rows).
+    // Cloud rows can be refreshed while changes are queued because fetchTodos
+    // reapplies every pending local operation before updating the screen.
     const canReload = () => {
-      if (!navigator.onLine) return false;
-      try {
-        const queued = JSON.parse(localStorage.getItem('offline_pending_operations') || '[]');
-        if (!Array.isArray(queued) || queued.length === 0) return true;
-        // Don't stay stale forever: refresh only when every queued change has
-        // been marked as stalled (retried many times), so a single transient
-        // failure never wipes a task that is still waiting to be saved.
-        return queued.every((op: any) => op?.stalled === true);
-
-      } catch {
-        return true;
-      }
+      return navigator.onLine;
     };
     const syncedReload = () => fetchTodos();
     const reload = () => {
@@ -583,7 +631,7 @@ export default function TodoApp() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTodos((data || []) as Todo[]);
+      setTodos(currentTodos => mergePendingChanges((data || []) as Todo[], currentTodos));
     } catch (error: any) {
       toast({
         title: t('error'),

@@ -75,6 +75,10 @@ export function useOfflineSync() {
       let firstSyncError: unknown;
 
       for (const op of sortedOps) {
+        // A stalled change is kept for recovery, but automatic retries stop here.
+        // Otherwise every focus/visibility event repeats the same error forever.
+        if (op.stalled) continue;
+
         try {
           let result: any = null;
           if (op.type === 'insert') {
@@ -111,7 +115,7 @@ export function useOfflineSync() {
         );
       savePendingOperations(remainingOps);
 
-      if (firstSyncError) {
+      if (firstSyncError && stalledOps.length === 0) {
         toast({
           title: t('error'),
           description: getServerErrorMessage(firstSyncError, t('failed_sync_task')),
@@ -122,7 +126,7 @@ export function useOfflineSync() {
       if (stalledOps.length > 0) {
         toast({
           title: t('error'),
-          description: `${t('unsynced_changes_kept')} (${stalledOps.length})`,
+          description: `${getServerErrorMessage(firstSyncError, t('failed_sync_task'))}. ${t('unsynced_changes_kept')} (${stalledOps.length})`,
           variant: 'destructive',
         });
       }

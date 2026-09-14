@@ -1,9 +1,10 @@
-import { useEffect, lazy, Suspense } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/UserAvatar';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { Settings, Languages, Star } from 'lucide-react';
@@ -14,18 +15,14 @@ export default function Index() {
   const {
     user,
     loading,
-    signOut
+    signOut,
+    signInWithGoogle
   } = useAuth();
   const {
     profile
   } = useProfile();
   const { t, language, setLanguage } = useLanguage();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
+  const { toast } = useToast();
   const guestSeo = <SEO
     title={t('guest_meta_title')}
     description={t('guest_meta_description')}

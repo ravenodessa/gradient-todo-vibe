@@ -4,12 +4,15 @@ import App from "./App.tsx";
 import "./index.css";
 import { setupPWA } from "./pwa";
 import { setupChunkRecovery } from "./chunkRecovery";
+import { AppErrorBoundary } from "./components/AppErrorBoundary";
 
 setupChunkRecovery();
 setupPWA();
 
 createRoot(document.getElementById("root")!).render(
-  <HelmetProvider>
-    <App />
-  </HelmetProvider>
+  <AppErrorBoundary>
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>
+  </AppErrorBoundary>
 );

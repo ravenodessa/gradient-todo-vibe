@@ -90,6 +90,15 @@ export function useOfflineSync() {
           // keep the operation queued when the server rejected it.
           if (result?.error) throw result.error;
           successfulOps.push(op.id);
+          historyEntries.push({
+            operationId: op.id,
+            type: op.type,
+            table: op.table,
+            title: typeof op.data?.title === 'string' ? op.data.title : undefined,
+            status: 'success',
+            queuedAt: op.timestamp,
+            attempts: (op.attempts ?? 0) + 1,
+          });
         } catch (error) {
           if (import.meta.env.DEV) console.error(`Failed to sync operation ${op.id}:`, error);
           firstSyncError ??= error;

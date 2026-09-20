@@ -16,6 +16,7 @@ const Favorites = lazy(() => import("./pages/Favorites"));
 const Profile = lazy(() => import("./pages/Profile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Features = lazy(() => import("./pages/Features"));
+const SyncHistoryPage = lazy(() => import("./pages/SyncHistory"));
 
 const queryClient = new QueryClient();
 

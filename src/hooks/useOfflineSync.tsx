@@ -72,6 +72,7 @@ export function useOfflineSync() {
       const successfulOps: string[] = [];
       const stalledOps: string[] = [];
       const attemptsById = new Map<string, number>();
+      const historyEntries: Parameters<typeof recordSyncHistory>[0] = [];
       let firstSyncError: unknown;
       let shouldReportRetryError = false;
 

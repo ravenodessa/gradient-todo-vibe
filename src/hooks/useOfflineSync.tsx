@@ -110,8 +110,21 @@ export function useOfflineSync() {
           if (attempts >= MAX_ATTEMPTS && navigator.onLine && !op.stalled) {
             stalledOps.push(op.id);
           }
+          historyEntries.push({
+            operationId: op.id,
+            type: op.type,
+            table: op.table,
+            title: typeof op.data?.title === 'string' ? op.data.title : undefined,
+            status: 'failed',
+            queuedAt: op.timestamp,
+            attempts,
+            reason: getServerErrorMessage(error, t('failed_sync_task')),
+          });
         }
       }
+
+      recordSyncHistory(historyEntries);
+
 
       // Remove synced operations, bump retry counters, flag stalled ones
       const remainingOps = operations

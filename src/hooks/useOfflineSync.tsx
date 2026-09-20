@@ -16,8 +16,8 @@ interface PendingOperation {
 }
 
 const STORAGE_KEY = 'offline_pending_operations';
-// After this many failures a change is marked as stalled: it stays in the queue
-// (never discarded) but no longer blocks cloud refreshes.
+// After this many failures a change is marked as stalled so repeated errors can
+// be silenced. It remains eligible for later automatic retries.
 const MAX_ATTEMPTS = 5;
 
 
@@ -73,12 +73,9 @@ export function useOfflineSync() {
       const stalledOps: string[] = [];
       const attemptsById = new Map<string, number>();
       let firstSyncError: unknown;
+      let shouldReportRetryError = false;
 
       for (const op of sortedOps) {
-        // A stalled change is kept for recovery, but automatic retries stop here.
-        // Otherwise every focus/visibility event repeats the same error forever.
-        if (op.stalled) continue;
-
         try {
           let result: any = null;
           if (op.type === 'insert') {
@@ -95,11 +92,12 @@ export function useOfflineSync() {
         } catch (error) {
           if (import.meta.env.DEV) console.error(`Failed to sync operation ${op.id}:`, error);
           firstSyncError ??= error;
+          shouldReportRetryError ||= !op.stalled;
           const attempts = (op.attempts ?? 0) + 1;
           attemptsById.set(op.id, attempts);
-          // Never discard the user's change: after many failures just mark it as
-          // stalled so cloud refreshes are no longer blocked by it.
-          if (attempts >= MAX_ATTEMPTS && navigator.onLine) {
+          // Mark the first transition to stalled so the user is warned once.
+          // Stalled operations continue retrying silently on later sync cycles.
+          if (attempts >= MAX_ATTEMPTS && navigator.onLine && !op.stalled) {
             stalledOps.push(op.id);
           }
         }
@@ -115,7 +113,7 @@ export function useOfflineSync() {
         );
       savePendingOperations(remainingOps);
 
-      if (firstSyncError && stalledOps.length === 0) {
+      if (firstSyncError && stalledOps.length === 0 && shouldReportRetryError) {
         toast({
           title: t('error'),
           description: getServerErrorMessage(firstSyncError, t('failed_sync_task')),

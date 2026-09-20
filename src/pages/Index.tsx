@@ -7,7 +7,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/UserAvatar';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
-import { Settings, Languages, Star } from 'lucide-react';
+import { Settings, Languages, Star, RefreshCw } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 
 const TodoApp = lazy(() => import("@/components/TodoApp"));

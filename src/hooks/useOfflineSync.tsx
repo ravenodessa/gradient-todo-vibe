@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from './useLanguage';
 import { getServerErrorMessage } from '@/lib/errorMessage';
+import { recordSyncHistory } from '@/lib/syncHistory';
 
 interface PendingOperation {
   id: string;
@@ -72,6 +73,7 @@ export function useOfflineSync() {
       const successfulOps: string[] = [];
       const stalledOps: string[] = [];
       const attemptsById = new Map<string, number>();
+      const historyEntries: Parameters<typeof recordSyncHistory>[0] = [];
       let firstSyncError: unknown;
       let shouldReportRetryError = false;
 
@@ -89,6 +91,15 @@ export function useOfflineSync() {
           // keep the operation queued when the server rejected it.
           if (result?.error) throw result.error;
           successfulOps.push(op.id);
+          historyEntries.push({
+            operationId: op.id,
+            type: op.type,
+            table: op.table,
+            title: typeof op.data?.title === 'string' ? op.data.title : undefined,
+            status: 'success',
+            queuedAt: op.timestamp,
+            attempts: (op.attempts ?? 0) + 1,
+          });
         } catch (error) {
           if (import.meta.env.DEV) console.error(`Failed to sync operation ${op.id}:`, error);
           firstSyncError ??= error;
@@ -100,8 +111,21 @@ export function useOfflineSync() {
           if (attempts >= MAX_ATTEMPTS && navigator.onLine && !op.stalled) {
             stalledOps.push(op.id);
           }
+          historyEntries.push({
+            operationId: op.id,
+            type: op.type,
+            table: op.table,
+            title: typeof op.data?.title === 'string' ? op.data.title : undefined,
+            status: 'failed',
+            queuedAt: op.timestamp,
+            attempts,
+            reason: getServerErrorMessage(error, t('failed_sync_task')),
+          });
         }
       }
+
+      recordSyncHistory(historyEntries);
+
 
       // Remove synced operations, bump retry counters, flag stalled ones
       const remainingOps = operations

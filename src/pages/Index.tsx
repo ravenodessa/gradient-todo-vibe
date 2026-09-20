@@ -7,7 +7,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/UserAvatar';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
-import { Settings, Languages, Star } from 'lucide-react';
+import { Settings, Languages, Star, RefreshCw } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 
 const TodoApp = lazy(() => import("@/components/TodoApp"));
@@ -104,6 +104,11 @@ export default function Index() {
             <Link to="/favorites">
               <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-yellow-400 hover:bg-yellow-400/10 hover:text-yellow-300 px-2 h-8 sm:h-9" title={t('favorites')}>
                 <Star className="h-4 w-4 fill-yellow-400" />
+              </Button>
+            </Link>
+            <Link to="/sync-history">
+              <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground px-2 h-8 sm:h-9" aria-label={t('sync_history')} title={t('sync_history')}>
+                <RefreshCw className="h-4 w-4" />
               </Button>
             </Link>
             <Link to="/archive">

@@ -59,7 +59,7 @@ export function useOfflineSync() {
   };
 
   // Sync all pending operations
-  const syncPendingOperations = async () => {
+  const syncPendingOperations = async (onlyIds?: string[]) => {
     if (isSyncingRef.current || !isOnline) return;
 
     const operations = getPendingOperations();
@@ -69,7 +69,10 @@ export function useOfflineSync() {
 
     try {
       // Sort by timestamp to maintain order
-      const sortedOps = operations.sort((a, b) => a.timestamp - b.timestamp);
+      const sortedOps = operations
+        .slice()
+        .sort((a, b) => a.timestamp - b.timestamp)
+        .filter(op => !onlyIds || onlyIds.includes(op.id));
       const successfulOps: string[] = [];
       const stalledOps: string[] = [];
       const attemptsById = new Map<string, number>();

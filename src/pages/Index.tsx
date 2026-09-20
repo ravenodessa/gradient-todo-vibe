@@ -106,6 +106,11 @@ export default function Index() {
                 <Star className="h-4 w-4 fill-yellow-400" />
               </Button>
             </Link>
+            <Link to="/sync-history">
+              <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground px-2 h-8 sm:h-9" aria-label={t('sync_history')} title={t('sync_history')}>
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </Link>
             <Link to="/archive">
               <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-muted-foreground hover:bg-white/10 hover:text-foreground px-2 h-8 sm:h-9" aria-label={t('open_archive')} title={t('open_archive')}>
                 📁

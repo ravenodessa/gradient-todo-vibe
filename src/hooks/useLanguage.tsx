@@ -456,6 +456,12 @@ const translations = {
     'sync_op_insert': 'Task created',
     'sync_op_update': 'Task updated',
     'sync_op_delete': 'Task deleted',
+    'sync_retry_one': 'Retry',
+    'sync_retry_selected': 'Retry selected',
+    'sync_select_all_failed': 'Select all failed',
+    'sync_clear_selection': 'Clear selection',
+    'sync_not_queued': 'This change is no longer queued',
+    'sync_selected_count': 'Selected',
 
     'failed_archive_tasks': 'Failed to archive tasks',
     'failed_load_archived': 'Failed to load archived tasks',

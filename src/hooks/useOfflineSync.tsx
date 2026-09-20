@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useOnlineStatus } from './useOnlineStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -17,6 +17,7 @@ interface PendingOperation {
 }
 
 const STORAGE_KEY = 'offline_pending_operations';
+const QUEUE_UPDATED_EVENT = 'offline-sync-queue-updated';
 // After this many failures a change is marked as stalled so repeated errors can
 // be silenced. It remains eligible for later automatic retries.
 const MAX_ATTEMPTS = 5;
@@ -28,6 +29,8 @@ export function useOfflineSync() {
   const { t } = useLanguage();
   const isSyncingRef = useRef(false);
   const previousOnlineStatus = useRef(isOnline);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
   // Load pending operations from localStorage
   const getPendingOperations = (): PendingOperation[] => {
@@ -43,6 +46,8 @@ export function useOfflineSync() {
   const savePendingOperations = (operations: PendingOperation[]) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(operations));
+      setPendingCount(operations.length);
+      window.dispatchEvent(new CustomEvent(QUEUE_UPDATED_EVENT, { detail: operations.length }));
     } catch (error) {
       if (import.meta.env.DEV) console.error('Failed to save pending operations:', error);
     }
@@ -66,6 +71,7 @@ export function useOfflineSync() {
     if (operations.length === 0) return;
 
     isSyncingRef.current = true;
+    setIsSyncing(true);
 
     try {
       // Sort by timestamp to maintain order
@@ -178,6 +184,7 @@ export function useOfflineSync() {
       });
     } finally {
       isSyncingRef.current = false;
+      setIsSyncing(false);
     }
   };
 
@@ -193,6 +200,17 @@ export function useOfflineSync() {
   // Flush anything left over from a previous session on startup
   useEffect(() => {
     if (isOnline) syncPendingOperations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const updatePendingCount = (event: Event) => {
+      const count = (event as CustomEvent<number>).detail;
+      setPendingCount(typeof count === 'number' ? count : getPendingOperations().length);
+    };
+    setPendingCount(getPendingOperations().length);
+    window.addEventListener(QUEUE_UPDATED_EVENT, updatePendingCount);
+    return () => window.removeEventListener(QUEUE_UPDATED_EVENT, updatePendingCount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -215,6 +233,8 @@ export function useOfflineSync() {
 
   return {
     isOnline,
+    isSyncing,
+    pendingCount,
     queueOperation,
     getPendingOperations,
     syncPendingOperations,

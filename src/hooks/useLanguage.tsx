@@ -201,6 +201,10 @@ const translations = {
     'sync_clear_selection': 'Снять выбор',
     'sync_not_queued': 'Изменение больше не в очереди',
     'sync_selected_count': 'Выбрано',
+    'sync_status_saved': 'Все изменения сохранены в облаке',
+    'sync_status_syncing': 'Синхронизация…',
+    'sync_status_pending': 'Ожидают отправки',
+    'sync_status_offline': 'Нет подключения к интернету',
 
     'failed_archive_tasks': 'Не удалось архивировать задачи',
     'failed_load_archived': 'Не удалось загрузить архивированные задачи',
@@ -462,6 +466,10 @@ const translations = {
     'sync_clear_selection': 'Clear selection',
     'sync_not_queued': 'This change is no longer queued',
     'sync_selected_count': 'Selected',
+    'sync_status_saved': 'All changes are saved to the cloud',
+    'sync_status_syncing': 'Syncing…',
+    'sync_status_pending': 'Waiting to send',
+    'sync_status_offline': 'No internet connection',
 
     'failed_archive_tasks': 'Failed to archive tasks',
     'failed_load_archived': 'Failed to load archived tasks',

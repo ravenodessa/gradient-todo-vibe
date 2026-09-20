@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Check, Edit2, X, CalendarIcon, Repeat, GripVertical, ArrowRight } from 'lucide-react';
+import { Trash2, Plus, Check, Edit2, X, CalendarIcon, Repeat, GripVertical, ArrowRight, Cloud, CloudOff, Loader2, CheckCircle2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -471,7 +471,7 @@ export default function TodoApp() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { t, language } = useLanguage();
-  const { isOnline, queueOperation } = useOfflineSync();
+  const { isOnline, isSyncing, pendingCount, queueOperation } = useOfflineSync();
   const isMobile = useIsMobile();
   const { playCompletionSound } = useCompletionSound();
 
@@ -1470,6 +1470,38 @@ export default function TodoApp() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="glass-effect rounded-b-2xl pt-3 pb-6 px-4 sm:px-6 shadow-2xl border border-white/20 border-t-0">
+
+        <div
+          className={cn(
+            "mb-3 flex min-h-10 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium",
+            !isOnline
+              ? "border-destructive/30 bg-destructive/10 text-destructive"
+              : pendingCount > 0
+                ? "border-primary/30 bg-primary/10 text-primary"
+                : "border-green-500/30 bg-green-500/10 text-green-600 dark:text-green-400"
+          )}
+          role="status"
+          aria-live="polite"
+        >
+          {!isOnline ? (
+            <CloudOff className="h-4 w-4 shrink-0" />
+          ) : isSyncing ? (
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+          ) : pendingCount > 0 ? (
+            <Cloud className="h-4 w-4 shrink-0" />
+          ) : (
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+          )}
+          <span className="min-w-0">
+            {!isOnline
+              ? `${t('sync_status_offline')}${pendingCount > 0 ? ` · ${t('sync_status_pending')}: ${pendingCount}` : ''}`
+              : isSyncing
+                ? `${t('sync_status_syncing')}${pendingCount > 0 ? ` · ${pendingCount}` : ''}`
+                : pendingCount > 0
+                  ? `${t('sync_status_pending')}: ${pendingCount}`
+                  : t('sync_status_saved')}
+          </span>
+        </div>
 
         {/* Add Todo Form */}
         <div className="space-y-3">

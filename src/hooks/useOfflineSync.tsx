@@ -59,7 +59,7 @@ export function useOfflineSync() {
   };
 
   // Sync all pending operations
-  const syncPendingOperations = async () => {
+  const syncPendingOperations = async (onlyIds?: string[]) => {
     if (isSyncingRef.current || !isOnline) return;
 
     const operations = getPendingOperations();
@@ -69,7 +69,10 @@ export function useOfflineSync() {
 
     try {
       // Sort by timestamp to maintain order
-      const sortedOps = operations.sort((a, b) => a.timestamp - b.timestamp);
+      const sortedOps = operations
+        .slice()
+        .sort((a, b) => a.timestamp - b.timestamp)
+        .filter(op => !onlyIds || onlyIds.includes(op.id));
       const successfulOps: string[] = [];
       const stalledOps: string[] = [];
       const attemptsById = new Map<string, number>();
@@ -103,7 +106,7 @@ export function useOfflineSync() {
         } catch (error) {
           if (import.meta.env.DEV) console.error(`Failed to sync operation ${op.id}:`, error);
           firstSyncError ??= error;
-          shouldReportRetryError ||= !op.stalled;
+          shouldReportRetryError ||= !op.stalled || !!onlyIds;
           const attempts = (op.attempts ?? 0) + 1;
           attemptsById.set(op.id, attempts);
           // Mark the first transition to stalled so the user is warned once.

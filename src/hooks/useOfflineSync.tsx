@@ -106,7 +106,7 @@ export function useOfflineSync() {
         } catch (error) {
           if (import.meta.env.DEV) console.error(`Failed to sync operation ${op.id}:`, error);
           firstSyncError ??= error;
-          shouldReportRetryError ||= !op.stalled;
+          shouldReportRetryError ||= !op.stalled || !!onlyIds;
           const attempts = (op.attempts ?? 0) + 1;
           attemptsById.set(op.id, attempts);
           // Mark the first transition to stalled so the user is warned once.

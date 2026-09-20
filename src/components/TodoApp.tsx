@@ -1478,7 +1478,7 @@ export default function TodoApp() {
               ? "border-destructive/30 bg-destructive/10 text-destructive"
               : pendingCount > 0
                 ? "border-primary/30 bg-primary/10 text-primary"
-                : "border-green-500/30 bg-green-500/10 text-green-600 dark:text-green-400"
+                : "border-border bg-muted/60 text-muted-foreground"
           )}
           role="status"
           aria-live="polite"

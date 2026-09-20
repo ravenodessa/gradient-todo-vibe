@@ -195,6 +195,12 @@ const translations = {
     'sync_op_insert': 'Создание задачи',
     'sync_op_update': 'Изменение задачи',
     'sync_op_delete': 'Удаление задачи',
+    'sync_retry_one': 'Повторить',
+    'sync_retry_selected': 'Повторить выбранные',
+    'sync_select_all_failed': 'Выбрать все неудачные',
+    'sync_clear_selection': 'Снять выбор',
+    'sync_not_queued': 'Изменение больше не в очереди',
+    'sync_selected_count': 'Выбрано',
 
     'failed_archive_tasks': 'Не удалось архивировать задачи',
     'failed_load_archived': 'Не удалось загрузить архивированные задачи',

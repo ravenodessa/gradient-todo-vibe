@@ -269,6 +269,9 @@ const translations = {
     'failed_delete_favorite': 'Не удалось удалить из избранного',
     'double_click_to_top': 'Двойной клик — переместить в начало',
     'notes_placeholder': 'Заметки (макс. 200 символов)',
+    'paste': 'Вставить',
+    'paste_failed': 'Не удалось получить доступ к буферу обмена',
+
     'recurring_created': 'Создана следующая повторяющаяся задача',
     'failed_save_order': 'Не удалось сохранить порядок задач',
     'seo_auth_login_title': 'Вход — Todo List',
@@ -540,6 +543,9 @@ const translations = {
     'failed_delete_favorite': 'Failed to remove from favorites',
     'double_click_to_top': 'Double-click to move to top',
     'notes_placeholder': 'Notes (max 200 characters)',
+    'paste': 'Paste',
+    'paste_failed': 'Could not access clipboard',
+
     'recurring_created': 'Next recurring task created',
     'failed_save_order': 'Failed to save task order',
     'seo_auth_login_title': 'Sign in — Todo List',

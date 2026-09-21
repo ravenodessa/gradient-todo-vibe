@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Check, Edit2, X, CalendarIcon, Repeat, GripVertical, ArrowRight, Cloud, CloudOff, Loader2, CheckCircle2 } from 'lucide-react';
+import { Trash2, Plus, Check, Edit2, X, CalendarIcon, Repeat, GripVertical, ArrowRight, Cloud, CloudOff, Loader2, CheckCircle2, ClipboardPaste } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';

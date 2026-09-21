@@ -18,6 +18,7 @@ interface FavoriteTask {
   notes: string | null;
   recurrence_type: string | null;
   pinned: boolean;
+  usage_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -175,6 +176,8 @@ export default function Favorites() {
 
       if (error) throw error;
 
+      const newUsageCount = (favorite.usage_count || 0) + 1;
+
       // Move this favorite to the bottom of the favorites list
       // Favorites are ordered by created_at desc, so oldest is at the bottom.
       const oldestCreatedAt = favorites.length > 0
@@ -184,7 +187,7 @@ export default function Favorites() {
 
       const { error: updateError } = await supabase
         .from('favorite_tasks')
-        .update({ created_at: newCreatedAt })
+        .update({ created_at: newCreatedAt, usage_count: newUsageCount })
         .eq('id', favorite.id);
 
       if (updateError) throw updateError;
@@ -192,7 +195,7 @@ export default function Favorites() {
       // Reorder local state: move this favorite to the end
       setFavorites(prev => {
         const updated = prev.map(f =>
-          f.id === favorite.id ? { ...f, created_at: newCreatedAt } : f
+          f.id === favorite.id ? { ...f, created_at: newCreatedAt, usage_count: newUsageCount } : f
         );
         const moved = updated.find(f => f.id === favorite.id)!;
         const rest = updated.filter(f => f.id !== favorite.id);
@@ -298,6 +301,7 @@ export default function Favorites() {
                         onClick={() => { setEditingId(fav.id); setEditingTitle(fav.title); }}
                       >
                         {fav.title}
+                        <span className="ml-1 text-muted-foreground">({fav.usage_count || 0})</span>
                       </span>
                       <Button
                         onClick={() => togglePin(fav)}

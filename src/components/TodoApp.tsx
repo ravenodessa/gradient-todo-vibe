@@ -123,6 +123,8 @@ interface SortableItemProps {
   t: (key: string) => string;
   setEditingText: (text: string) => void;
   setEditingNotes: (notes: string) => void;
+  pasteNotes: () => Promise<void>;
+
   setEditingDateAndSave: (date: Date | undefined) => void;
   setEditingRecurrenceAndSave: (recurrence: string) => void;
   toggleTodo: (id: string) => void;

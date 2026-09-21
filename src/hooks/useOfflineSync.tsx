@@ -148,9 +148,6 @@ export function useOfflineSync() {
         }
       }
 
-      recordSyncHistory(historyEntries);
-
-
       // Remove synced operations, bump retry counters, flag stalled ones
       const remainingOps = operations
         .filter(op => !successfulOps.includes(op.id))
@@ -165,6 +162,7 @@ export function useOfflineSync() {
             : op
         );
       savePendingOperations(remainingOps);
+      recordSyncHistory(historyEntries);
 
       if (firstSyncError && stalledOps.length === 0 && shouldReportRetryError) {
         toast({

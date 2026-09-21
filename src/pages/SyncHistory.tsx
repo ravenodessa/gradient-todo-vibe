@@ -21,13 +21,16 @@ export default function SyncHistory() {
   const { syncPendingOperations, isOnline, getPendingOperations } = useOfflineSync();
   const [entries, setEntries] = useState<SyncHistoryEntry[]>([]);
   const [queuedIds, setQueuedIds] = useState<string[]>([]);
+  const [queuedRetryTimes, setQueuedRetryTimes] = useState<Record<string, number | undefined>>({});
   const [selected, setSelected] = useState<string[]>([]);
 
   const dateLocale = language === 'ru' ? ru : enUS;
 
   const refresh = useCallback(() => {
     setEntries(getSyncHistory());
-    setQueuedIds(getPendingOperations().map(op => op.id));
+    const queued = getPendingOperations();
+    setQueuedIds(queued.map(op => op.id));
+    setQueuedRetryTimes(Object.fromEntries(queued.map(op => [op.id, op.nextRetryAt])));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -212,14 +215,18 @@ export default function SyncHistory() {
                             <dd className="mt-0.5 break-words [overflow-wrap:anywhere]">
                               {entry.status === 'success'
                                 ? t('sync_completed')
-                                : !isRetryable(entry) || !entry.nextRetryAt
+                                : !isRetryable(entry) || !(queuedRetryTimes[entry.operationId] ?? entry.nextRetryAt)
                                   ? t('sync_no_retry')
-                                  : format(new Date(entry.nextRetryAt), 'dd MMM yyyy, HH:mm:ss', { locale: dateLocale })}
+                                  : format(
+                                      new Date(queuedRetryTimes[entry.operationId] ?? entry.nextRetryAt ?? 0),
+                                      'dd MMM yyyy, HH:mm:ss',
+                                      { locale: dateLocale }
+                                    )}
                             </dd>
                           </div>
                           <div>
                             <dt className="text-muted-foreground">{t('sync_retry_count')}</dt>
-                            <dd className="mt-0.5">{entry.attempts ?? 0}</dd>
+                            <dd className="mt-0.5">{Math.max(0, (entry.attempts ?? 1) - 1)}</dd>
                           </div>
                           <div>
                             <dt className="text-muted-foreground">{t('sync_full_error')}</dt>

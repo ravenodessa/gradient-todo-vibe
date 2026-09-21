@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Home, Languages, RefreshCw, Trash2, CheckCircle2, XCircle } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Home, Languages, RefreshCw, Trash2, CheckCircle2, XCircle, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import { SEO } from '@/components/SEO';
@@ -20,13 +21,16 @@ export default function SyncHistory() {
   const { syncPendingOperations, isOnline, getPendingOperations } = useOfflineSync();
   const [entries, setEntries] = useState<SyncHistoryEntry[]>([]);
   const [queuedIds, setQueuedIds] = useState<string[]>([]);
+  const [queuedRetryTimes, setQueuedRetryTimes] = useState<Record<string, number | undefined>>({});
   const [selected, setSelected] = useState<string[]>([]);
 
   const dateLocale = language === 'ru' ? ru : enUS;
 
   const refresh = useCallback(() => {
     setEntries(getSyncHistory());
-    setQueuedIds(getPendingOperations().map(op => op.id));
+    const queued = getPendingOperations();
+    setQueuedIds(queued.map(op => op.id));
+    setQueuedRetryTimes(Object.fromEntries(queued.map(op => [op.id, op.nextRetryAt])));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -197,6 +201,44 @@ export default function SyncHistory() {
                     {entry.status === 'failed' && !isRetryable(entry) && (
                       <div className="text-xs text-muted-foreground mt-1">{t('sync_not_queued')}</div>
                     )}
+                    <Collapsible className="group/details mt-2">
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+                          <ChevronDown className="transition-transform group-data-[state=open]/details:rotate-180" />
+                          {t('sync_technical_details')}
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="pt-2">
+                        <dl className="space-y-2 rounded-md border border-border/60 bg-background/30 p-2 text-xs">
+                          <div>
+                            <dt className="text-muted-foreground">{t('sync_next_retry')}</dt>
+                            <dd className="mt-0.5 break-words [overflow-wrap:anywhere]">
+                              {entry.status === 'success'
+                                ? t('sync_completed')
+                                : !isRetryable(entry) || !(queuedRetryTimes[entry.operationId] ?? entry.nextRetryAt)
+                                  ? t('sync_no_retry')
+                                  : format(
+                                      new Date(queuedRetryTimes[entry.operationId] ?? entry.nextRetryAt ?? 0),
+                                      'dd MMM yyyy, HH:mm:ss',
+                                      { locale: dateLocale }
+                                    )}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-muted-foreground">{t('sync_retry_count')}</dt>
+                            <dd className="mt-0.5">{Math.max(0, (entry.attempts ?? 1) - 1)}</dd>
+                          </div>
+                          <div>
+                            <dt className="text-muted-foreground">{t('sync_full_error')}</dt>
+                            <dd className="mt-0.5 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                              {entry.status === 'failed'
+                                ? entry.fullError || entry.reason || t('failed_sync_task')
+                                : '—'}
+                            </dd>
+                          </div>
+                        </dl>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
                   {isRetryable(entry) && (
                     <Button

@@ -3,7 +3,7 @@ import { useOnlineStatus } from './useOnlineStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from './useLanguage';
-import { getServerErrorMessage } from '@/lib/errorMessage';
+import { getFullServerErrorMessage, getServerErrorMessage } from '@/lib/errorMessage';
 import { recordSyncHistory } from '@/lib/syncHistory';
 
 interface PendingOperation {
@@ -14,6 +14,7 @@ interface PendingOperation {
   timestamp: number;
   attempts?: number;
   stalled?: boolean;
+  nextRetryAt?: number;
 }
 
 const STORAGE_KEY = 'offline_pending_operations';
@@ -21,6 +22,11 @@ const QUEUE_UPDATED_EVENT = 'offline-sync-queue-updated';
 // After this many failures a change is marked as stalled so repeated errors can
 // be silenced. It remains eligible for later automatic retries.
 const MAX_ATTEMPTS = 5;
+const BASE_RETRY_DELAY_MS = 30_000;
+const MAX_RETRY_DELAY_MS = 30 * 60_000;
+
+const getRetryDelay = (attempts: number) =>
+  Math.min(BASE_RETRY_DELAY_MS * 2 ** Math.max(0, attempts - 1), MAX_RETRY_DELAY_MS);
 
 
 export function useOfflineSync() {
@@ -29,8 +35,10 @@ export function useOfflineSync() {
   const { t } = useLanguage();
   const isSyncingRef = useRef(false);
   const previousOnlineStatus = useRef(isOnline);
+  const syncFunctionRef = useRef<(onlyIds?: string[]) => Promise<void>>(async () => undefined);
   const [isSyncing, setIsSyncing] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [queueRevision, setQueueRevision] = useState(0);
 
   // Load pending operations from localStorage
   const getPendingOperations = (): PendingOperation[] => {
@@ -47,6 +55,7 @@ export function useOfflineSync() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(operations));
       setPendingCount(operations.length);
+      setQueueRevision(revision => revision + 1);
       window.dispatchEvent(new CustomEvent(QUEUE_UPDATED_EVENT, { detail: operations.length }));
     } catch (error) {
       if (import.meta.env.DEV) console.error('Failed to save pending operations:', error);
@@ -78,10 +87,12 @@ export function useOfflineSync() {
       const sortedOps = operations
         .slice()
         .sort((a, b) => a.timestamp - b.timestamp)
-        .filter(op => !onlyIds || onlyIds.includes(op.id));
+        .filter(op => onlyIds ? onlyIds.includes(op.id) : !op.nextRetryAt || op.nextRetryAt <= Date.now());
+      if (sortedOps.length === 0) return;
       const successfulOps: string[] = [];
       const stalledOps: string[] = [];
       const attemptsById = new Map<string, number>();
+      const nextRetryById = new Map<string, number>();
       const historyEntries: Parameters<typeof recordSyncHistory>[0] = [];
       let firstSyncError: unknown;
       let shouldReportRetryError = false;
@@ -114,7 +125,9 @@ export function useOfflineSync() {
           firstSyncError ??= error;
           shouldReportRetryError ||= !op.stalled || !!onlyIds;
           const attempts = (op.attempts ?? 0) + 1;
+          const nextRetryAt = Date.now() + getRetryDelay(attempts);
           attemptsById.set(op.id, attempts);
+          nextRetryById.set(op.id, nextRetryAt);
           // Mark the first transition to stalled so the user is warned once.
           // Stalled operations continue retrying silently on later sync cycles.
           if (attempts >= MAX_ATTEMPTS && navigator.onLine && !op.stalled) {
@@ -129,6 +142,8 @@ export function useOfflineSync() {
             queuedAt: op.timestamp,
             attempts,
             reason: getServerErrorMessage(error, t('failed_sync_task')),
+            fullError: getFullServerErrorMessage(error, t('failed_sync_task')),
+            nextRetryAt,
           });
         }
       }
@@ -141,7 +156,12 @@ export function useOfflineSync() {
         .filter(op => !successfulOps.includes(op.id))
         .map(op =>
           attemptsById.has(op.id)
-            ? { ...op, attempts: attemptsById.get(op.id), stalled: stalledOps.includes(op.id) || op.stalled }
+            ? {
+                ...op,
+                attempts: attemptsById.get(op.id),
+                nextRetryAt: nextRetryById.get(op.id),
+                stalled: stalledOps.includes(op.id) || op.stalled,
+              }
             : op
         );
       savePendingOperations(remainingOps);
@@ -188,6 +208,8 @@ export function useOfflineSync() {
     }
   };
 
+  syncFunctionRef.current = syncPendingOperations;
+
   // Sync when coming back online
   useEffect(() => {
     if (isOnline && !previousOnlineStatus.current) {
@@ -202,6 +224,23 @@ export function useOfflineSync() {
     if (isOnline) syncPendingOperations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Wake the queue at the earliest scheduled retry. Manual retries bypass this delay.
+  useEffect(() => {
+    if (!isOnline) return;
+    const nextRetryAt = getPendingOperations()
+      .map(operation => operation.nextRetryAt)
+      .filter((value): value is number => typeof value === 'number' && value > Date.now())
+      .sort((a, b) => a - b)[0];
+    if (!nextRetryAt) return;
+
+    const timer = window.setTimeout(() => {
+      syncFunctionRef.current();
+    }, Math.max(0, nextRetryAt - Date.now()));
+    return () => window.clearTimeout(timer);
+    // queueRevision changes whenever retry scheduling changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline, queueRevision]);
 
   useEffect(() => {
     const updatePendingCount = (event: Event) => {

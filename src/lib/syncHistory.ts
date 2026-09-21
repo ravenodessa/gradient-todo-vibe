@@ -11,6 +11,8 @@ export interface SyncHistoryEntry {
   queuedAt?: number;
   attempts?: number;
   reason?: string;
+  fullError?: string;
+  nextRetryAt?: number;
 }
 
 const STORAGE_KEY = 'sync_history_log';

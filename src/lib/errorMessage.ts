@@ -1,6 +1,8 @@
 type ServerError = {
   message?: unknown;
   code?: unknown;
+  details?: unknown;
+  hint?: unknown;
 };
 
 const readablePart = (value: unknown) =>
@@ -15,4 +17,19 @@ export function getServerErrorMessage(error: unknown, fallback: string): string 
   const code = readablePart(serverError.code);
   if (!message) return fallback;
   return code ? `${message} (${code})` : message;
+}
+
+export function getFullServerErrorMessage(error: unknown, fallback: string): string {
+  if (typeof error === 'string') return error.trim() || fallback;
+  if (!error || typeof error !== 'object') return fallback;
+
+  const serverError = error as ServerError;
+  const parts = [
+    readablePart(serverError.message),
+    readablePart(serverError.code) ? `Code: ${readablePart(serverError.code)}` : null,
+    readablePart(serverError.details),
+    readablePart(serverError.hint),
+  ].filter((part): part is string => Boolean(part));
+
+  return parts.length > 0 ? parts.join('\n') : fallback;
 }

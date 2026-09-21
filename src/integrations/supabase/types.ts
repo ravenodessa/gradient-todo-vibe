@@ -23,6 +23,7 @@ export type Database = {
           recurrence_type: string | null
           title: string
           updated_at: string
+          usage_count: number
           user_id: string
         }
         Insert: {
@@ -33,6 +34,7 @@ export type Database = {
           recurrence_type?: string | null
           title: string
           updated_at?: string
+          usage_count?: number
           user_id: string
         }
         Update: {
@@ -43,6 +45,7 @@ export type Database = {
           recurrence_type?: string | null
           title?: string
           updated_at?: string
+          usage_count?: number
           user_id?: string
         }
         Relationships: []

@@ -1,0 +1,1 @@
+ALTER TABLE public.favorite_tasks ADD COLUMN usage_count integer NOT NULL DEFAULT 0;

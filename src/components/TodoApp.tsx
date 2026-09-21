@@ -995,6 +995,20 @@ export default function TodoApp() {
     setEditingRecurrence('none');
   };
 
+  const pasteNotes = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setEditingNotes(text.slice(0, 200));
+    } catch {
+      toast({
+        title: t('error'),
+        description: t('paste_failed'),
+        variant: 'destructive',
+      });
+    }
+  };
+
+
   const saveEditing = async () => {
     if (!editingText.trim() || !editingId) return;
 
@@ -1457,6 +1471,8 @@ export default function TodoApp() {
                   t={t}
                   setEditingText={setEditingText}
                   setEditingNotes={setEditingNotes}
+                  pasteNotes={pasteNotes}
+
                   setEditingDateAndSave={saveWithDate}
                   setEditingRecurrenceAndSave={saveWithRecurrence}
                   toggleTodo={toggleTodo}

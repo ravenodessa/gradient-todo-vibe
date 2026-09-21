@@ -36,7 +36,15 @@ export function recordSyncHistory(entries: Omit<SyncHistoryEntry, 'id' | 'timest
       id: `${now}-${index}-${Math.random().toString(36).slice(2, 8)}`,
       timestamp: now,
     }));
-    const next = [...newEntries, ...getSyncHistory()].slice(0, MAX_ENTRIES);
+    // A change that keeps failing is retried on every app focus/startup. Keep a
+    // single up-to-date failure line per operation instead of flooding history.
+    const repeatedFailureIds = new Set(
+      newEntries.filter(entry => entry.status === 'failed').map(entry => entry.operationId)
+    );
+    const previous = getSyncHistory().filter(
+      entry => !(entry.status === 'failed' && repeatedFailureIds.has(entry.operationId))
+    );
+    const next = [...newEntries, ...previous].slice(0, MAX_ENTRIES);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     window.dispatchEvent(new CustomEvent(SYNC_HISTORY_EVENT));
   } catch (error) {

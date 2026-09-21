@@ -155,6 +155,8 @@ const SortableItem = memo(({
   t,
   setEditingText,
   setEditingNotes,
+  pasteNotes,
+
   setEditingDateAndSave,
   setEditingRecurrenceAndSave,
   toggleTodo,

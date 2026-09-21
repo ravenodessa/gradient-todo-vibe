@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Check, Edit2, X, CalendarIcon, Repeat, GripVertical, ArrowRight, Cloud, CloudOff, Loader2, CheckCircle2 } from 'lucide-react';
+import { Trash2, Plus, Check, Edit2, X, CalendarIcon, Repeat, GripVertical, ArrowRight, Cloud, CloudOff, Loader2, CheckCircle2, ClipboardPaste } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -123,6 +123,8 @@ interface SortableItemProps {
   t: (key: string) => string;
   setEditingText: (text: string) => void;
   setEditingNotes: (notes: string) => void;
+  pasteNotes: () => Promise<void>;
+
   setEditingDateAndSave: (date: Date | undefined) => void;
   setEditingRecurrenceAndSave: (recurrence: string) => void;
   toggleTodo: (id: string) => void;
@@ -153,6 +155,8 @@ const SortableItem = memo(({
   t,
   setEditingText,
   setEditingNotes,
+  pasteNotes,
+
   setEditingDateAndSave,
   setEditingRecurrenceAndSave,
   toggleTodo,
@@ -238,9 +242,18 @@ const SortableItem = memo(({
             value={editingNotes}
             onChange={(e) => setEditingNotes(e.target.value)}
             placeholder={t('notes_placeholder')}
-            className="h-8 bg-white/10 border-white/20 text-foreground text-xs pr-20"
+            className="h-8 bg-white/10 border-white/20 text-foreground text-xs pr-24"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            <Button
+              onClick={pasteNotes}
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5 text-muted-foreground hover:text-foreground hover:bg-white/10 p-0 shrink-0"
+              title={t('paste')}
+            >
+              <ClipboardPaste className="w-3 h-3" />
+            </Button>
             {editingNotes.length > 0 && (
               <Button
                 onClick={() => setEditingNotes('')}
@@ -259,6 +272,7 @@ const SortableItem = memo(({
             </span>
           </div>
         </div>
+
           <div className="flex flex-col gap-2">
             <div className="flex gap-2 items-center flex-wrap">
               <Popover>
@@ -981,6 +995,20 @@ export default function TodoApp() {
     setEditingRecurrence('none');
   };
 
+  const pasteNotes = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setEditingNotes(text.slice(0, 200));
+    } catch {
+      toast({
+        title: t('error'),
+        description: t('paste_failed'),
+        variant: 'destructive',
+      });
+    }
+  };
+
+
   const saveEditing = async () => {
     if (!editingText.trim() || !editingId) return;
 
@@ -1443,6 +1471,8 @@ export default function TodoApp() {
                   t={t}
                   setEditingText={setEditingText}
                   setEditingNotes={setEditingNotes}
+                  pasteNotes={pasteNotes}
+
                   setEditingDateAndSave={saveWithDate}
                   setEditingRecurrenceAndSave={saveWithRecurrence}
                   toggleTodo={toggleTodo}

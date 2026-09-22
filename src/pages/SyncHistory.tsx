@@ -43,6 +43,23 @@ export default function SyncHistory() {
   const typeLabel = (type: SyncHistoryEntry['type']) =>
     type === 'insert' ? t('sync_op_insert') : type === 'update' ? t('sync_op_update') : t('sync_op_delete');
 
+  const getNextRetryTime = (entry: SyncHistoryEntry) =>
+    queuedRetryTimes[entry.operationId] ?? entry.nextRetryAt;
+
+  const nextRetryLabel = (entry: SyncHistoryEntry) => {
+    const nextRetryAt = getNextRetryTime(entry);
+    if (entry.status === 'success') return t('sync_completed');
+    if (!isRetryable(entry)) return t('sync_not_queued');
+    if (!nextRetryAt) return t('sync_no_retry');
+    return format(new Date(nextRetryAt), 'dd MMM yyyy, HH:mm:ss', { locale: dateLocale });
+  };
+
+  const resultLabel = (entry: SyncHistoryEntry) => {
+    if (entry.status === 'success') return t('sync_result_success');
+    if (!isRetryable(entry)) return t('sync_result_failed_not_queued');
+    return getNextRetryTime(entry) ? t('sync_result_failed_retry_scheduled') : t('sync_result_failed_retry_ready');
+  };
+
   const successCount = entries.filter(e => e.status === 'success').length;
   const failedCount = entries.length - successCount;
 
@@ -189,9 +206,18 @@ export default function SyncHistory() {
                       </span>
                       <span className="text-xs text-muted-foreground">{typeLabel(entry.type)}</span>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      {t('sync_sent_at')}: {format(new Date(entry.timestamp), 'dd MMM yyyy, HH:mm:ss', { locale: dateLocale })}
-                      {typeof entry.attempts === 'number' ? ` · ${t('sync_attempt')} ${entry.attempts}` : ''}
+                    <div className="text-xs text-muted-foreground mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
+                      <span>
+                        {t('sync_last_attempt')}: {format(new Date(entry.timestamp), 'dd MMM yyyy, HH:mm:ss', { locale: dateLocale })}
+                      </span>
+                      <span>{t('sync_attempt_count')}: {entry.attempts ?? 1}</span>
+                      <span>{t('sync_next_retry')}: {nextRetryLabel(entry)}</span>
+                    </div>
+                    <div className="text-xs mt-1 break-words [overflow-wrap:anywhere]">
+                      <span className="text-muted-foreground">{t('sync_result')}: </span>
+                      <span className={entry.status === 'success' ? 'text-green-500' : 'text-destructive'}>
+                        {resultLabel(entry)}
+                      </span>
                     </div>
                     {entry.status === 'failed' && (
                       <div className="text-xs text-destructive mt-1 break-words [overflow-wrap:anywhere]">
@@ -213,20 +239,16 @@ export default function SyncHistory() {
                           <div>
                             <dt className="text-muted-foreground">{t('sync_next_retry')}</dt>
                             <dd className="mt-0.5 break-words [overflow-wrap:anywhere]">
-                              {entry.status === 'success'
-                                ? t('sync_completed')
-                                : !isRetryable(entry) || !(queuedRetryTimes[entry.operationId] ?? entry.nextRetryAt)
-                                  ? t('sync_no_retry')
-                                  : format(
-                                      new Date(queuedRetryTimes[entry.operationId] ?? entry.nextRetryAt ?? 0),
-                                      'dd MMM yyyy, HH:mm:ss',
-                                      { locale: dateLocale }
-                                    )}
+                              {nextRetryLabel(entry)}
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-muted-foreground">{t('sync_retry_count')}</dt>
-                            <dd className="mt-0.5">{Math.max(0, (entry.attempts ?? 1) - 1)}</dd>
+                            <dt className="text-muted-foreground">{t('sync_attempt_count')}</dt>
+                            <dd className="mt-0.5">{entry.attempts ?? 1}</dd>
+                          </div>
+                          <div>
+                            <dt className="text-muted-foreground">{t('sync_result')}</dt>
+                            <dd className="mt-0.5 break-words [overflow-wrap:anywhere]">{resultLabel(entry)}</dd>
                           </div>
                           <div>
                             <dt className="text-muted-foreground">{t('sync_full_error')}</dt>

@@ -17,6 +17,13 @@ interface PendingOperation {
   nextRetryAt?: number;
 }
 
+export interface SyncRunResult {
+  attempted: number;
+  succeeded: number;
+  failed: number;
+  reason?: 'offline' | 'busy' | 'empty' | 'deferred';
+}
+
 const STORAGE_KEY = 'offline_pending_operations';
 const QUEUE_UPDATED_EVENT = 'offline-sync-queue-updated';
 // After this many failures a change is marked as stalled so repeated errors can
@@ -35,8 +42,8 @@ export function useOfflineSync() {
   const { t } = useLanguage();
   const isSyncingRef = useRef(false);
   const previousOnlineStatus = useRef(isOnline);
-  const syncFunctionRef = useRef<(onlyIds?: string[], options?: { force?: boolean }) => Promise<void>>(
-    async () => undefined
+  const syncFunctionRef = useRef<(onlyIds?: string[], options?: { force?: boolean }) => Promise<SyncRunResult>>(
+    async () => ({ attempted: 0, succeeded: 0, failed: 0, reason: 'empty' })
   );
   const [isSyncing, setIsSyncing] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
@@ -77,10 +84,17 @@ export function useOfflineSync() {
   // Sync all pending operations
   const syncPendingOperations = async (onlyIds?: string[], options?: { force?: boolean }) => {
     const force = options?.force ?? false;
-    if (isSyncingRef.current || !isOnline) return;
+    if (isSyncingRef.current) {
+      return { attempted: 0, succeeded: 0, failed: 0, reason: 'busy' } as SyncRunResult;
+    }
+    if (!isOnline) {
+      return { attempted: 0, succeeded: 0, failed: 0, reason: 'offline' } as SyncRunResult;
+    }
 
     const operations = getPendingOperations();
-    if (operations.length === 0) return;
+    if (operations.length === 0) {
+      return { attempted: 0, succeeded: 0, failed: 0, reason: 'empty' } as SyncRunResult;
+    }
 
     isSyncingRef.current = true;
     setIsSyncing(true);
@@ -95,7 +109,9 @@ export function useOfflineSync() {
             ? onlyIds.includes(op.id)
             : force || !op.nextRetryAt || op.nextRetryAt <= Date.now()
         );
-      if (sortedOps.length === 0) return;
+      if (sortedOps.length === 0) {
+        return { attempted: 0, succeeded: 0, failed: 0, reason: 'deferred' } as SyncRunResult;
+      }
       const successfulOps: string[] = [];
       const stalledOps: string[] = [];
       const attemptsById = new Map<string, number>();
@@ -200,6 +216,11 @@ export function useOfflineSync() {
           duration: 1000,
         });
       }
+      return {
+        attempted: sortedOps.length,
+        succeeded: successfulOps.length,
+        failed: sortedOps.length - successfulOps.length,
+      } as SyncRunResult;
     } catch (error) {
       if (import.meta.env.DEV) console.error('Sync failed:', error);
       toast({
@@ -207,6 +228,7 @@ export function useOfflineSync() {
         description: getServerErrorMessage(error, t('failed_sync_task')),
         variant: 'destructive',
       });
+      return { attempted: 0, succeeded: 0, failed: 0 } as SyncRunResult;
     } finally {
       isSyncingRef.current = false;
       setIsSyncing(false);

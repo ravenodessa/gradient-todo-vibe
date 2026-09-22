@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Home, Languages, RefreshCw, Trash2, CheckCircle2, XCircle, ChevronDown } from 'lucide-react';
+import { Home, Languages, RefreshCw, Trash2, CheckCircle2, XCircle, ChevronDown, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
+import { useToast } from '@/hooks/use-toast';
 import { SEO } from '@/components/SEO';
 import { format } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
@@ -18,7 +19,8 @@ import {
 
 export default function SyncHistory() {
   const { t, language, setLanguage } = useLanguage();
-  const { syncPendingOperations, isOnline, getPendingOperations } = useOfflineSync();
+  const { toast } = useToast();
+  const { syncPendingOperations, isOnline, isSyncing, getPendingOperations } = useOfflineSync();
   const [entries, setEntries] = useState<SyncHistoryEntry[]>([]);
   const [queuedIds, setQueuedIds] = useState<string[]>([]);
   const [queuedRetryTimes, setQueuedRetryTimes] = useState<Record<string, number | undefined>>({});
@@ -81,7 +83,12 @@ export default function SyncHistory() {
     );
 
   const retry = async (ids?: string[]) => {
-    await syncPendingOperations(ids, { force: true });
+    const result = await syncPendingOperations(ids, { force: true });
+    if (result.reason === 'empty' || (result.reason === 'deferred' && !ids)) {
+      toast({ title: t('info'), description: t('sync_nothing_to_retry') });
+    } else if (result.reason === 'busy') {
+      toast({ title: t('info'), description: t('sync_already_running') });
+    }
     setSelected([]);
     refresh();
   };
@@ -126,11 +133,11 @@ export default function SyncHistory() {
               variant="outline"
               size="sm"
               className="ml-auto"
-              disabled={!isOnline}
+              disabled={!isOnline || isSyncing}
               onClick={() => retry()}
             >
-              <RefreshCw className="h-4 w-4 mr-1" />
-              {t('sync_retry_now')}
+              {isSyncing ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+              {isSyncing ? t('sync_status_syncing') : t('sync_retry_now')}
             </Button>
             <Button
               variant="outline"
@@ -167,7 +174,7 @@ export default function SyncHistory() {
               <Button
                 size="sm"
                 className="ml-auto"
-                disabled={!isOnline || selectedRetryable.length === 0}
+                disabled={!isOnline || isSyncing || selectedRetryable.length === 0}
                 onClick={() => retry(selectedRetryable)}
               >
                 <RefreshCw className="h-4 w-4 mr-1" />
@@ -267,7 +274,7 @@ export default function SyncHistory() {
                       variant="outline"
                       size="sm"
                       className="shrink-0"
-                      disabled={!isOnline}
+                      disabled={!isOnline || isSyncing}
                       onClick={() => retry([entry.operationId])}
                     >
                       <RefreshCw className="h-4 w-4 mr-1" />

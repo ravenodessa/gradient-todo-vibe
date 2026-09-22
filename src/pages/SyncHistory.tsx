@@ -64,7 +64,7 @@ export default function SyncHistory() {
     );
 
   const retry = async (ids?: string[]) => {
-    await syncPendingOperations(ids);
+    await syncPendingOperations(ids, { force: true });
     setSelected([]);
     refresh();
   };

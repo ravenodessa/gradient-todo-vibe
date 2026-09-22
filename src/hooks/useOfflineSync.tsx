@@ -35,7 +35,9 @@ export function useOfflineSync() {
   const { t } = useLanguage();
   const isSyncingRef = useRef(false);
   const previousOnlineStatus = useRef(isOnline);
-  const syncFunctionRef = useRef<(onlyIds?: string[]) => Promise<void>>(async () => undefined);
+  const syncFunctionRef = useRef<(onlyIds?: string[], options?: { force?: boolean }) => Promise<void>>(
+    async () => undefined
+  );
   const [isSyncing, setIsSyncing] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [queueRevision, setQueueRevision] = useState(0);
@@ -73,7 +75,8 @@ export function useOfflineSync() {
   };
 
   // Sync all pending operations
-  const syncPendingOperations = async (onlyIds?: string[]) => {
+  const syncPendingOperations = async (onlyIds?: string[], options?: { force?: boolean }) => {
+    const force = options?.force ?? false;
     if (isSyncingRef.current || !isOnline) return;
 
     const operations = getPendingOperations();
@@ -87,7 +90,11 @@ export function useOfflineSync() {
       const sortedOps = operations
         .slice()
         .sort((a, b) => a.timestamp - b.timestamp)
-        .filter(op => onlyIds ? onlyIds.includes(op.id) : !op.nextRetryAt || op.nextRetryAt <= Date.now());
+        .filter(op =>
+          onlyIds
+            ? onlyIds.includes(op.id)
+            : force || !op.nextRetryAt || op.nextRetryAt <= Date.now()
+        );
       if (sortedOps.length === 0) return;
       const successfulOps: string[] = [];
       const stalledOps: string[] = [];
@@ -212,14 +219,14 @@ export function useOfflineSync() {
   useEffect(() => {
     if (isOnline && !previousOnlineStatus.current) {
       // Just came back online
-      syncPendingOperations();
+      syncPendingOperations(undefined, { force: true });
     }
     previousOnlineStatus.current = isOnline;
   }, [isOnline]);
 
   // Flush anything left over from a previous session on startup
   useEffect(() => {
-    if (isOnline) syncPendingOperations();
+    if (isOnline) syncPendingOperations(undefined, { force: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, memo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
@@ -192,11 +193,11 @@ const SortableItem = memo(({
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 ${
+      className={`flex items-center gap-2 sm:gap-3 md:gap-2 px-2 sm:px-4 md:px-3 py-1.5 md:py-1 rounded-lg bg-foreground/5 border border-foreground/10 hover:bg-foreground/10 transition-all duration-200 ${
         isCompleting ? 'animate-completing' : ''
       } ${isNewlyAdded ? 'animate-new-task' : ''}`}
     >
-      <div className="flex flex-col items-center justify-center gap-2 flex-shrink-0">
+      <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-1.5 flex-shrink-0">
         <div
           {...attributes}
           {...listeners}
@@ -366,10 +367,10 @@ const SortableItem = memo(({
       </div>
     ) : (
       <>
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-x-2">
           <span
             title={todo.title}
-            className={`block break-words [overflow-wrap:anywhere] text-sm sm:text-base leading-snug transition-all duration-200 ${
+             className={`block break-words [overflow-wrap:anywhere] text-sm sm:text-base md:text-sm leading-snug transition-all duration-200 ${
               todo.completed
                 ? 'line-through text-muted-foreground'
                 : 'text-foreground'
@@ -380,11 +381,11 @@ const SortableItem = memo(({
             {todo.title}
           </span>
           {todo.notes && (
-            <div className="mt-1 text-xs text-muted-foreground break-words break-all">
+            <div className="mt-1 md:col-span-2 md:row-start-2 md:mt-0.5 text-xs text-muted-foreground break-words break-all">
               {renderNotesWithLinks(todo.notes)}
             </div>
           )}
-          <div className="flex items-center gap-2 flex-wrap mt-1">
+          <div className="flex items-center gap-2 flex-wrap mt-1 md:mt-0 md:col-start-2 md:row-start-1 md:justify-end">
             {todo.due_date && (
               <div className="flex items-center gap-1">
                 <CalendarIcon className="w-3 h-3 text-muted-foreground" />
@@ -415,7 +416,7 @@ const SortableItem = memo(({
            </div>
          </div>
          
-          <div className="flex flex-col items-center justify-center gap-1 flex-shrink-0">
+           <div className="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-0 flex-shrink-0">
             {!todo.completed ? (
               <>
                 <Button
@@ -1440,8 +1441,8 @@ export default function TodoApp() {
     });
 
     return (
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3">
+      <div className="mb-6 md:mb-4">
+        <div className="flex items-center gap-2 mb-3 md:mb-2">
           <span className="text-lg">{emoji}</span>
           <h2 className="text-lg font-semibold text-foreground">{title}</h2>
           <span className="text-sm text-muted-foreground">({sectionTodos.length})</span>
@@ -1497,41 +1498,43 @@ export default function TodoApp() {
     );
   };
 
+  const syncStatus = (
+    <div
+      className={cn(
+        "flex items-center gap-2 text-sm font-medium",
+        "max-md:mb-3 max-md:min-h-10 max-md:rounded-lg max-md:border max-md:px-3 max-md:py-2 md:text-xs",
+        !isOnline
+          ? "text-destructive max-md:border-destructive/30 max-md:bg-destructive/10"
+          : pendingCount > 0
+            ? "text-primary max-md:border-primary/30 max-md:bg-primary/10"
+            : "text-muted-foreground max-md:border-border max-md:bg-muted/60"
+      )}
+      role="status"
+      aria-live="polite"
+    >
+      {!isOnline ? <CloudOff className="h-4 w-4 shrink-0" />
+        : isSyncing ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+          : pendingCount > 0 ? <Cloud className="h-4 w-4 shrink-0" />
+            : <CheckCircle2 className="h-4 w-4 shrink-0" />}
+      <span className="min-w-0">
+        {!isOnline
+          ? `${t('sync_status_offline')}${pendingCount > 0 ? ` · ${t('sync_status_pending')}: ${pendingCount}` : ''}`
+          : isSyncing
+            ? `${t('sync_status_syncing')}${pendingCount > 0 ? ` · ${pendingCount}` : ''}`
+            : pendingCount > 0
+              ? `${t('sync_status_pending')}: ${pendingCount}`
+              : t('sync_status_saved')}
+      </span>
+    </div>
+  );
+  const syncStatusHost = document.getElementById('desktop-sync-status');
+
   return (
     <div className="max-w-2xl mx-auto">
       <div className="glass-effect rounded-b-2xl pt-3 pb-6 px-4 sm:px-6 shadow-2xl border border-white/20 border-t-0">
 
-        <div
-          className={cn(
-            "mb-3 flex min-h-10 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium",
-            !isOnline
-              ? "border-destructive/30 bg-destructive/10 text-destructive"
-              : pendingCount > 0
-                ? "border-primary/30 bg-primary/10 text-primary"
-                : "border-border bg-muted/60 text-muted-foreground"
-          )}
-          role="status"
-          aria-live="polite"
-        >
-          {!isOnline ? (
-            <CloudOff className="h-4 w-4 shrink-0" />
-          ) : isSyncing ? (
-            <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-          ) : pendingCount > 0 ? (
-            <Cloud className="h-4 w-4 shrink-0" />
-          ) : (
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-          )}
-          <span className="min-w-0">
-            {!isOnline
-              ? `${t('sync_status_offline')}${pendingCount > 0 ? ` · ${t('sync_status_pending')}: ${pendingCount}` : ''}`
-              : isSyncing
-                ? `${t('sync_status_syncing')}${pendingCount > 0 ? ` · ${pendingCount}` : ''}`
-                : pendingCount > 0
-                  ? `${t('sync_status_pending')}: ${pendingCount}`
-                  : t('sync_status_saved')}
-          </span>
-        </div>
+        <div className="md:hidden">{syncStatus}</div>
+        {syncStatusHost && createPortal(syncStatus, syncStatusHost)}
 
         {/* Add Todo Form */}
         <div className="space-y-3">

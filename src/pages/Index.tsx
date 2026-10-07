@@ -85,7 +85,7 @@ export default function Index() {
   return <main className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-4">
       <SEO title={t('app_meta_title')} description={t('app_meta_description')} path="/" />
       <div className="max-w-2xl mx-auto">
-        <div className="glass-effect rounded-t-2xl px-4 sm:px-8 pt-6 pb-4 shadow-2xl border border-white/20 border-b-0">
+        <div className="glass-effect rounded-t-2xl px-4 sm:px-8 pt-6 pb-4 md:pt-4 md:pb-2 shadow-2xl border border-white/20 border-b-0">
           <div className="flex justify-between items-center gap-2 flex-wrap">
             <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               {t('your_tasks')}
@@ -130,6 +130,7 @@ export default function Index() {
               <span className="sm:hidden">✕</span>
             </Button>
           </div>
+         <div id="desktop-sync-status" className="hidden md:block mt-2" />
         </div>
         </div>
         <Suspense fallback={

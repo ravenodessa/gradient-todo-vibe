@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Check, Edit2, X, CalendarIcon, Repeat, GripVertical, ArrowRight, Cloud, CloudOff, Loader2, CheckCircle2, ClipboardPaste } from 'lucide-react';
+import { Trash2, Plus, Check, Edit2, X, CalendarIcon, Repeat, GripVertical, ArrowRight, Cloud, CloudOff, Loader2, CheckCircle2, ClipboardPaste, Mic, MicOff } from 'lucide-react';
+import { useSpeechInput } from '@/hooks/useSpeechInput';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -498,6 +499,14 @@ export default function TodoApp() {
   }, []);
 
   const dateLocale = language === 'ru' ? ru : enUS;
+  const speech = useSpeechInput(
+    language === 'ru' ? 'ru-RU' : 'en-US',
+    (text) => setNewTodo(text.slice(0, 500)),
+    () => toast({
+      title: language === 'ru' ? 'Нет доступа к микрофону' : 'Microphone unavailable',
+      variant: 'destructive',
+    })
+  );
 
   useEffect(() => {
     if (user) {

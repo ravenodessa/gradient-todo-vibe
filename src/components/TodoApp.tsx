@@ -1539,14 +1539,30 @@ export default function TodoApp() {
         {/* Add Todo Form */}
         <div className="space-y-3">
           <div className="flex gap-3">
-            <Input
-              ref={inputRef}
-              value={newTodo}
-              onChange={(e) => setNewTodo(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={t('add_new_task')}
-              className="flex-1 bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary"
-            />
+            <div className="relative flex-1">
+              <Input
+                ref={inputRef}
+                value={newTodo}
+                onChange={(e) => setNewTodo(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={speech.listening ? (language === 'ru' ? 'Говорите…' : 'Listening…') : t('add_new_task')}
+                className={cn("bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary", speech.supported && "pr-10")}
+              />
+              {speech.supported && (
+                <button
+                  type="button"
+                  onClick={() => (speech.listening ? speech.stop() : speech.start())}
+                  aria-label={language === 'ru' ? 'Голосовой ввод' : 'Voice input'}
+                  aria-pressed={speech.listening}
+                  className={cn(
+                    "absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-colors",
+                    speech.listening ? "bg-destructive text-destructive-foreground animate-pulse" : "text-muted-foreground hover:text-foreground hover:bg-white/10"
+                  )}
+                >
+                  {speech.listening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </button>
+              )}
+            </div>
             <Button
               onClick={() => addTodo()}
               className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shrink-0"

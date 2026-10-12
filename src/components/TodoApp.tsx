@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Check, Edit2, X, CalendarIcon, Repeat, GripVertical, ArrowRight, Cloud, CloudOff, Loader2, CheckCircle2, ClipboardPaste } from 'lucide-react';
+import { Trash2, Plus, Check, Edit2, X, CalendarIcon, Repeat, GripVertical, ArrowRight, Cloud, CloudOff, Loader2, CheckCircle2, ClipboardPaste, Mic, MicOff } from 'lucide-react';
+import { useSpeechInput } from '@/hooks/useSpeechInput';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -498,6 +499,14 @@ export default function TodoApp() {
   }, []);
 
   const dateLocale = language === 'ru' ? ru : enUS;
+  const speech = useSpeechInput(
+    language === 'ru' ? 'ru-RU' : 'en-US',
+    (text) => setNewTodo(text.slice(0, 500)),
+    () => toast({
+      title: language === 'ru' ? 'Нет доступа к микрофону' : 'Microphone unavailable',
+      variant: 'destructive',
+    })
+  );
 
   useEffect(() => {
     if (user) {
@@ -1539,14 +1548,30 @@ export default function TodoApp() {
         {/* Add Todo Form */}
         <div className="space-y-3">
           <div className="flex gap-3">
-            <Input
-              ref={inputRef}
-              value={newTodo}
-              onChange={(e) => setNewTodo(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={t('add_new_task')}
-              className="flex-1 bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary"
-            />
+            <div className="relative flex-1">
+              <Input
+                ref={inputRef}
+                value={newTodo}
+                onChange={(e) => setNewTodo(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={speech.listening ? (language === 'ru' ? 'Говорите…' : 'Listening…') : t('add_new_task')}
+                className={cn("bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary", speech.supported && "pr-10")}
+              />
+              {speech.supported && (
+                <button
+                  type="button"
+                  onClick={() => (speech.listening ? speech.stop() : speech.start())}
+                  aria-label={language === 'ru' ? 'Голосовой ввод' : 'Voice input'}
+                  aria-pressed={speech.listening}
+                  className={cn(
+                    "absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-colors",
+                    speech.listening ? "bg-destructive text-destructive-foreground animate-pulse" : "text-muted-foreground hover:text-foreground hover:bg-white/10"
+                  )}
+                >
+                  {speech.listening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </button>
+              )}
+            </div>
             <Button
               onClick={() => addTodo()}
               className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shrink-0"

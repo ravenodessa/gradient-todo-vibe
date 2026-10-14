@@ -1557,10 +1557,20 @@ export default function TodoApp() {
                 placeholder={speech.listening ? (language === 'ru' ? 'Говорите…' : 'Listening…') : t('add_new_task')}
                 className={cn("bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary", speech.supported && "pr-10")}
               />
-              {speech.supported && (
+              {(
                 <button
                   type="button"
-                  onClick={() => (speech.listening ? speech.stop() : speech.start())}
+                  onClick={() => {
+                    if (!speech.supported) {
+                      toast({
+                        title: language === 'ru' ? 'Голосовой ввод не поддерживается' : 'Voice input not supported',
+                        description: language === 'ru' ? 'Ваш браузер не поддерживает распознавание речи' : 'Your browser does not support speech recognition',
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
+                    speech.listening ? speech.stop() : speech.start();
+                  }}
                   aria-label={language === 'ru' ? 'Голосовой ввод' : 'Voice input'}
                   aria-pressed={speech.listening}
                   className={cn(

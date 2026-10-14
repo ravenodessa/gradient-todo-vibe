@@ -1555,7 +1555,7 @@ export default function TodoApp() {
                 onChange={(e) => setNewTodo(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={speech.listening ? (language === 'ru' ? 'Говорите…' : 'Listening…') : t('add_new_task')}
-                className={cn("bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary", speech.supported && "pr-10")}
+                className={cn("bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary", "pr-10")}
               />
               {(
                 <button

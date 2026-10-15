@@ -113,6 +113,12 @@ const translations = {
     'continue_with_google': 'Продолжить с Google',
     'try_without_login': 'Попробовать без входа',
     'guest_mode_banner': 'Гостевой режим: задачи сохраняются только на этом устройстве. Войдите, чтобы синхронизировать.',
+    'daily_win_share': 'Поделиться итогами дня',
+    'daily_win_heading': 'Итоги дня',
+    'daily_win_count': 'Выполнено задач: {n}',
+    'daily_win_more': '…и ещё {n}',
+    'daily_win_empty': 'Сегодня ещё нет выполненных задач',
+    'daily_win_saved': 'Картинка сохранена',
 
     // Profile page
     'profile': 'Профиль',
@@ -398,6 +404,12 @@ const translations = {
     'continue_with_google': 'Continue with Google',
     'try_without_login': 'Try without login',
     'guest_mode_banner': 'Guest mode: tasks are kept on this device only. Sign in to sync.',
+    'daily_win_share': 'Share my daily win',
+    'daily_win_heading': 'Daily Win',
+    'daily_win_count': '{n} tasks completed',
+    'daily_win_more': '…and {n} more',
+    'daily_win_empty': 'No completed tasks today yet',
+    'daily_win_saved': 'Image saved',
 
     // Profile page
     'profile': 'Profile',

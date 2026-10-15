@@ -7,6 +7,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/UserAvatar';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
+import { DailyWinButton } from '@/components/DailyWinButton';
 import { Settings, Languages, Star, RefreshCw } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 
@@ -104,6 +105,7 @@ export default function Index() {
             </h1>
           <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
             <PWAInstallButton />
+            <DailyWinButton />
             <Button 
               variant="outline" 
               size="sm" 

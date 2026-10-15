@@ -16,7 +16,8 @@ export default function Index() {
     user,
     loading,
     signOut,
-    signInWithGoogle
+    signInWithGoogle,
+    signInAsGuest
   } = useAuth();
   const {
     profile
@@ -69,6 +70,17 @@ export default function Index() {
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
               </svg>
               {t('continue_with_google')}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={async () => {
+                const { error } = await signInAsGuest();
+                if (error) {
+                  toast({ title: t('error'), description: error.message, variant: 'destructive' });
+                }
+              }}
+            >
+              {t('try_without_login')}
             </Button>
             <Link to="/auth">
               <Button variant="outline">
@@ -131,6 +143,11 @@ export default function Index() {
             </Button>
           </div>
          <div id="desktop-sync-status" className="hidden md:block mt-2" />
+          {user.is_anonymous && (
+            <Link to="/auth" className="block mt-2 text-xs text-muted-foreground underline hover:text-foreground">
+              {t('guest_mode_banner')}
+            </Link>
+          )}
         </div>
         </div>
         <Suspense fallback={

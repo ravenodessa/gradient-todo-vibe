@@ -111,6 +111,8 @@ const translations = {
     'have_account': 'Уже есть аккаунт? Войдите',
     'or': 'или',
     'continue_with_google': 'Продолжить с Google',
+    'try_without_login': 'Попробовать без входа',
+    'guest_mode_banner': 'Гостевой режим: задачи сохраняются только на этом устройстве. Войдите, чтобы синхронизировать.',
 
     // Profile page
     'profile': 'Профиль',
@@ -394,6 +396,8 @@ const translations = {
     'have_account': 'Already have an account? Sign in',
     'or': 'or',
     'continue_with_google': 'Continue with Google',
+    'try_without_login': 'Try without login',
+    'guest_mode_banner': 'Guest mode: tasks are kept on this device only. Sign in to sync.',
 
     // Profile page
     'profile': 'Profile',

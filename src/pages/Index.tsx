@@ -53,6 +53,7 @@ export default function Index() {
             <li>• {t('welcome_bullet_favorites')}</li>
             <li>• {t('welcome_bullet_archive')}</li>
             <li>• {t('welcome_bullet_pwa')}</li>
+            <li>• {t('welcome_bullet_dnd')}</li>
           </ul>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <Button

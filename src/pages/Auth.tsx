@@ -14,7 +14,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signUp, signIn, signInWithGoogle, user } = useAuth();
+  const { signUp, signIn, user } = useAuth();
   const { toast } = useToast();
   const { t } = useLanguage();
   const navigate = useNavigate();

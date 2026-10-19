@@ -17,7 +17,6 @@ export default function Index() {
     user,
     loading,
     signOut,
-    signInWithGoogle,
     signInAsGuest
   } = useAuth();
   const {

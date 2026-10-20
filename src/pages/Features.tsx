@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Repeat, WifiOff, Archive as ArchiveIcon, Star, Bell, Smartphone } from 'lucide-react';
+import { Repeat, WifiOff, Archive as ArchiveIcon, Star, Bell, Smartphone, Languages } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import { useLanguage } from '@/hooks/useLanguage';
 
 export default function Features() {
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
 
   const features = useMemo(
     () => [

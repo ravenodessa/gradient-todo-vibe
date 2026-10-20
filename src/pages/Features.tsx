@@ -121,7 +121,17 @@ export default function Features() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData }} />
 
       <div className="max-w-3xl mx-auto">
-        <header className="glass-effect rounded-2xl p-6 sm:p-10 shadow-2xl border border-white/20 text-center">
+        <header className="glass-effect relative rounded-2xl p-6 sm:p-10 shadow-2xl border border-white/20 text-center">
+          <Button
+            variant="outline"
+            size="sm"
+            className="absolute right-3 top-3 px-2 h-8"
+            onClick={() => setLanguage(language === 'ru' ? 'en' : 'ru')}
+            aria-label={language === 'ru' ? 'Switch to English' : 'Переключить на русский'}
+            title={language === 'ru' ? 'Switch to English' : 'Переключить на русский'}
+          >
+            <Languages className="h-4 w-4" />
+          </Button>
           <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             {t('features_main_title')}
           </h1>

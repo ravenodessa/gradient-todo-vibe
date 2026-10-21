@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 type Language = 'ru' | 'en';
 
@@ -603,9 +604,55 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     return (saved === 'en' || saved === 'ru') ? saved : 'en';
   });
 
+  // Restore the language saved in the user's profile (survives visits, cleared storage and other devices)
+  useEffect(() => {
+    let cancelled = false;
+
+    const restoreFromProfile = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const userId = session?.user?.id;
+        if (!userId || cancelled) return;
+        const { data } = await supabase
+          .from('profiles')
+          .select('interface_language')
+          .eq('user_id', userId)
+          .maybeSingle();
+        if (cancelled || !data?.interface_language) return;
+        if (data.interface_language === 'en' || data.interface_language === 'ru') {
+          setLanguage(data.interface_language);
+          localStorage.setItem('language', data.interface_language);
+        }
+      } catch {
+        // Profile restore is best-effort; keep the current language on failure
+      }
+    };
+
+    restoreFromProfile();
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') restoreFromProfile();
+    });
+
+    return () => {
+      cancelled = true;
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
+
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang);
     localStorage.setItem('language', lang);
+    // Save to the profile so the choice survives cleared browser storage and other devices
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        const userId = session?.user?.id;
+        if (!userId) return;
+        return supabase
+          .from('profiles')
+          .update({ interface_language: lang })
+          .eq('user_id', userId);
+      })
+      .catch(() => undefined);
   };
 
   const t = (key: string) => {

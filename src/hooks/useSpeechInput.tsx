@@ -2,6 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 type Recognition = any;
 
+// Recognized speech arrives lowercase, so the first letter is uppercased
+// while the rest of the phrase is kept exactly as spoken.
+const capitalizeFirst = (text: string) => {
+  if (!text) return text;
+  const first = Array.from(text)[0];
+  return first.toLocaleUpperCase() + text.slice(first.length);
+};
+
 export const useSpeechInput = (lang: string, onText: (text: string) => void, onError?: () => void) => {
   const [listening, setListening] = useState(false);
   const recRef = useRef<Recognition | null>(null);

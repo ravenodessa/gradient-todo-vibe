@@ -23,6 +23,14 @@ interface FavoriteTask {
   updated_at: string;
 }
 
+const sortFavorites = (list: FavoriteTask[]) =>
+  [...list].sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    const countDiff = (b.usage_count || 0) - (a.usage_count || 0);
+    if (countDiff !== 0) return countDiff;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
 export default function Favorites() {
   const { user, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -51,10 +59,11 @@ export default function Favorites() {
         .from('favorite_tasks')
         .select('*')
         .order('pinned', { ascending: false })
+        .order('usage_count', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setFavorites(data || []);
+      setFavorites(sortFavorites(data || []));
     } catch (error: any) {
       toast({ title: t('error'), description: t('failed_load_favorites'), variant: 'destructive' });
     } finally {
@@ -133,13 +142,7 @@ export default function Favorites() {
         .update({ pinned: newPinned })
         .eq('id', fav.id);
       if (error) throw error;
-      setFavorites(prev => {
-        const updated = prev.map(f => f.id === fav.id ? { ...f, pinned: newPinned } : f);
-        return [...updated].sort((a, b) => {
-          if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        });
-      });
+      setFavorites(prev => sortFavorites(prev.map(f => (f.id === fav.id ? { ...f, pinned: newPinned } : f))));
       toast({ title: t('success'), description: newPinned ? t('favorite_pinned') : t('favorite_unpinned'), duration: 1000 });
     } catch (error: any) {
       toast({ title: t('error'), description: t('failed_update_favorite'), variant: 'destructive' });
@@ -193,14 +196,9 @@ export default function Favorites() {
       if (updateError) throw updateError;
 
       // Reorder local state: move this favorite to the end
-      setFavorites(prev => {
-        const updated = prev.map(f =>
-          f.id === favorite.id ? { ...f, created_at: newCreatedAt, usage_count: newUsageCount } : f
-        );
-        const moved = updated.find(f => f.id === favorite.id)!;
-        const rest = updated.filter(f => f.id !== favorite.id);
-        return [...rest, moved];
-      });
+      setFavorites(prev => sortFavorites(prev.map(f => (
+        f.id === favorite.id ? { ...f, created_at: newCreatedAt, usage_count: newUsageCount } : f
+      ))));
 
       toast({ title: t('success'), description: t('favorite_added_to_tasks'), duration: 1000 });
     } catch (error: any) {

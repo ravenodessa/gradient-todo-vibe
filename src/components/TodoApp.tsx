@@ -382,7 +382,10 @@ const SortableItem = memo(({
             {todo.title}
           </span>
           {todo.notes && (
-            <div className="mt-1 md:col-span-2 md:row-start-2 md:mt-0.5 text-xs text-muted-foreground break-words break-all">
+            <div
+              className="mt-1 md:col-span-2 md:row-start-2 md:mt-0.5 text-xs text-muted-foreground min-w-0 max-w-full truncate"
+              title={todo.notes}
+            >
               {renderNotesWithLinks(todo.notes)}
             </div>
           )}

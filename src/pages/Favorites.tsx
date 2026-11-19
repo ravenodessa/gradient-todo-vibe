@@ -273,7 +273,7 @@ export default function Favorites() {
               {favorites.map((fav) => (
                 <div
                   key={fav.id}
-                  className={`flex items-center gap-3 p-4 rounded-lg border transition-all duration-200 ${fav.pinned ? 'bg-primary/10 border-primary/30 hover:bg-primary/15' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                  className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg border transition-all duration-200 ${fav.pinned ? 'bg-primary/10 border-primary/30 hover:bg-primary/15' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
                 >
                   {editingId === fav.id ? (
                     <div className="flex-1 flex items-center gap-2">
@@ -295,12 +295,13 @@ export default function Favorites() {
                     <>
                       <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 shrink-0" />
                       <span
-                        className="flex-1 text-foreground cursor-pointer hover:text-primary transition-colors"
+                        className="flex-1 min-w-0 break-words text-foreground cursor-pointer hover:text-primary transition-colors"
                         onClick={() => { setEditingId(fav.id); setEditingTitle(fav.title); }}
                       >
                         {fav.title}
                         <span className="ml-1 text-muted-foreground">({fav.usage_count || 0})</span>
                       </span>
+                      <div className="grid grid-cols-2 sm:flex sm:items-center gap-0.5 sm:gap-1 shrink-0">
                       <Button
                         onClick={() => togglePin(fav)}
                         variant="ghost"
@@ -335,6 +336,7 @@ export default function Favorites() {
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
+                      </div>
                     </>
                   )}
                 </div>

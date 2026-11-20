@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Check, Edit2, X, CalendarIcon, Repeat, GripVertical, ArrowRight, Cloud, CloudOff, Loader2, CheckCircle2, ClipboardPaste, Mic, MicOff } from 'lucide-react';
+import { Trash2, Plus, Check, Edit2, X, CalendarIcon, Repeat, GripVertical, ArrowRight, Cloud, CloudOff, Loader2, CheckCircle2, ClipboardPaste, Mic, MicOff, Search } from 'lucide-react';
 import { useSpeechInput } from '@/hooks/useSpeechInput';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
@@ -487,6 +487,7 @@ export default function TodoApp() {
   const [editingRecurrence, setEditingRecurrence] = useState<string>('none');
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
   const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuth();
   const { toast } = useToast();
   const { t, language } = useLanguage();
@@ -1323,14 +1324,20 @@ export default function TodoApp() {
   const todayStr = format(today, 'yyyy-MM-dd');
   const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
 
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const isSearching = normalizedSearch.length > 0;
+  const visibleTodos = isSearching
+    ? todos.filter(todo => todo.title.toLowerCase().includes(normalizedSearch))
+    : todos;
+
   const groupedTodos = {
-    overdue: todos.filter(todo => {
+    overdue: visibleTodos.filter(todo => {
       if (!todo.due_date || todo.completed) return false;
       return todo.due_date < todayStr;
     }),
-    today: todos.filter(todo => todo.due_date === todayStr),
-    tomorrow: todos.filter(todo => todo.due_date === tomorrowStr),
-    later: todos.filter(todo => {
+    today: visibleTodos.filter(todo => todo.due_date === todayStr),
+    tomorrow: visibleTodos.filter(todo => todo.due_date === tomorrowStr),
+    later: visibleTodos.filter(todo => {
       if (!todo.due_date) return true;
       return todo.due_date > tomorrowStr;
     })
@@ -1459,6 +1466,11 @@ export default function TodoApp() {
           <h2 className="text-lg font-semibold text-foreground">{title}</h2>
           <span className="text-sm text-muted-foreground">({sectionTodos.length})</span>
         </div>
+        {isSearching ? (
+          <div className="space-y-1.5">
+            {sortedTodos.map((todo, index) => renderItem(todo, index, sortedTodos, showBadge))}
+          </div>
+        ) : (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -1469,46 +1481,48 @@ export default function TodoApp() {
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-1.5">
-            {sortedTodos.map((todo, index) => (
-                <SortableItem 
-                  key={todo.id} 
-                  isCompleting={completingIds.has(todo.id)}
-                  isNewlyAdded={newlyAddedId === todo.id}
-                  todo={todo}
-                  editingId={editingId}
-                  editingText={editingText}
-                  editingNotes={editingNotes}
-                  editingDate={editingDate}
-                  editingRecurrence={editingRecurrence}
-                  dateLocale={dateLocale}
-                  t={t}
-                  setEditingText={setEditingText}
-                  setEditingNotes={setEditingNotes}
-                  pasteNotes={pasteNotes}
-
-                  setEditingDateAndSave={saveWithDate}
-                  setEditingRecurrenceAndSave={saveWithRecurrence}
-                  toggleTodo={toggleTodo}
-                  startEditing={startEditing}
-                  deleteTodo={deleteTodo}
-                  saveEditing={saveEditing}
-                  cancelEditing={cancelEditing}
-                  handleEditKeyPress={handleEditKeyPress}
-                  renderNotesWithLinks={renderNotesWithLinks}
-                  index={index}
-                  showBadge={showBadge}
-                  onMoveToTop={(todoId) => moveToTop(todoId, sortedTodos)}
-                  moveToTomorrow={moveToTomorrow}
-                  setTomorrowAndSave={setTomorrowAndSave}
-                  setNextWeekAndSave={setNextWeekAndSave}
-                />
-              ))}
+            {sortedTodos.map((todo, index) => renderItem(todo, index, sortedTodos, showBadge))}
             </div>
           </SortableContext>
         </DndContext>
+        )}
       </div>
     );
   };
+
+  const renderItem = (todo: Todo, index: number, sortedTodos: Todo[], showBadge: boolean) => (
+    <SortableItem
+      key={todo.id}
+      isCompleting={completingIds.has(todo.id)}
+      isNewlyAdded={newlyAddedId === todo.id}
+      todo={todo}
+      editingId={editingId}
+      editingText={editingText}
+      editingNotes={editingNotes}
+      editingDate={editingDate}
+      editingRecurrence={editingRecurrence}
+      dateLocale={dateLocale}
+      t={t}
+      setEditingText={setEditingText}
+      setEditingNotes={setEditingNotes}
+      pasteNotes={pasteNotes}
+      setEditingDateAndSave={saveWithDate}
+      setEditingRecurrenceAndSave={saveWithRecurrence}
+      toggleTodo={toggleTodo}
+      startEditing={startEditing}
+      deleteTodo={deleteTodo}
+      saveEditing={saveEditing}
+      cancelEditing={cancelEditing}
+      handleEditKeyPress={handleEditKeyPress}
+      renderNotesWithLinks={renderNotesWithLinks}
+      index={index}
+      showBadge={showBadge}
+      onMoveToTop={(todoId) => moveToTop(todoId, sortedTodos)}
+      moveToTomorrow={moveToTomorrow}
+      setTomorrowAndSave={setTomorrowAndSave}
+      setNextWeekAndSave={setNextWeekAndSave}
+    />
+  );
 
   const syncStatus = (
     <div
@@ -1547,6 +1561,30 @@ export default function TodoApp() {
 
         <div className="md:hidden">{syncStatus}</div>
         {syncStatusHost && createPortal(syncStatus, syncStatusHost)}
+
+        {/* Global search by task title */}
+        {todos.length > 0 && (
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('search_tasks')}
+              aria-label={t('search_tasks')}
+              className="bg-white/10 border-white/20 text-foreground placeholder:text-muted-foreground focus:border-primary pl-9 pr-9"
+            />
+            {isSearching && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                aria-label={language === 'ru' ? 'Очистить поиск' : 'Clear search'}
+                className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Add Todo Form */}
         <div className="space-y-3">
@@ -1692,6 +1730,11 @@ export default function TodoApp() {
             <div className="text-4xl mb-4">📝</div>
             <p>{t('no_tasks')}</p>
             <p className="text-sm mt-1">{t('no_tasks_description')}</p>
+          </div>
+        ) : isSearching && visibleTodos.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <div className="text-4xl mb-4">🔍</div>
+            <p>{t('search_no_results')}</p>
           </div>
         ) : (
           <>
